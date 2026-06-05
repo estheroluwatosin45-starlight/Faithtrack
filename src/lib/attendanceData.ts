@@ -1,0 +1,944 @@
+import { Student, AttendanceRecord } from '../types';
+
+export const rawAttendanceData = `
+monday 
+1. Fatile Ephzibah
+2. Emmanuel okwedi
+3. Aladesuru Adegbenro
+4. Agu Destiny 
+5. Adeyiwol Favor 
+6. Abolarinwa Femi
+7. oluwafemi Israel
+8. Akomolafe Toyinsola 
+9. Tiwo oluwaseyi
+10. Timothy Austin 
+11. Yusuf Babatunde 
+
+11 March 
+1. awoyemi Ayomide 
+2. Fatile hepizibah 
+3. Adeojo progress
+4. olawuyi Solomon 
+5. oladunjoye Nathaniel 
+6. adebayo Stephen 
+7. Agu Destiny 
+8. Adeyiwola Favour 
+9. Aladesuru Adegbenro 
+10. Abolarinwa Femi 
+11. Akomolafe Toyinsola
+12. Ekundayo laughter 
+13. Timothy Austin 
+14. Adaron kola Charles 
+15. Oluwafemi Israel 
+16. Omopariola Philip 
+17. Tiwo Oluwaseyi 
+18. Fagbohun Joseph 
+19. Adebayo lfunu Samuel 
+20. Esan Olaoluwa
+
+12th March
+1. Agu Destiny 
+2. Akerele Oluwadamilola 
+3. Salihu abdulsamad 
+4. Oluwole Christopher 
+5. Tiwo Oluwaseyi 
+6. Timothy Austin 
+7. Oluwafemi Israel 
+8. Akomolafe Toyinsola 
+9. Olajiga Divine 
+10. Olawuyi Solomon 
+11. Yusuf Babatunde 
+12. Ogunyemi Emmanuel 
+13. Fatile Hepizibah 
+
+13 March 
+1. Ige Henry 
+2. Adaralegbe olamilekan 
+3. Olawuyi Solomon 
+4. Adaron kola  Charles 
+5. Abolarinwa Femi 
+6. Oluwole Christopher 
+7. Aladesuru Adegbenro 
+8. Olajiga Divine 
+9. Tiwo Oluwaseyi 
+10. Timothy Austin 
+11. Ogunyemi Emmanuel 
+12. Oluwafemi Israel 
+13. Agu Destiny 
+14. Akomolafe Toyinsola 
+15. Fatile Hepizibah 
+16. Yusuf Babatunde 
+17. Omopariola Philip 
+18. Ayodele Olajuwon 
+19. Ekundayo Laughter 
+20. Adebayo Laughter 
+
+14 March 
+1. Oluwafemi Israel 
+2. Abolarinwa Femi 
+3. Agu Destiny 
+4. Oluwole Christopher 
+5. Ayodele Olajuwon 
+6. Fagbohun Joseph 
+7. Esan olaoluwa 
+
+16 March 
+1. Tiwo Oluwaseyi 
+2. Olawuyi Solomon 
+3. Agu Destiny 
+4. Adebayo Ifunu Samuel 
+5. Adebayo Stephen 
+6. Aladesuru Adegbenro 
+7. Akomolafe Toyinsola 
+8. Ekundayo Laughter 
+9. Yusuf Babatunde 
+10. Omopariola Philip 
+11. Oluwafemi Israel 
+12. Timothy Austin 
+13. Dada Goodnews 
+14. Adeyiwola Favour 
+15. Jegede Daniel 
+16. Adunbiode Similoluwa
+
+17th March 
+1. Oluwafemi Israel 
+2. Agu Destiny 
+3. Timothy Austin 
+4. Adaralegbe Emmanuel 
+5. Abolarinwa Femi 
+6. Akomolafe Toyinsola
+7. Ogunyemi Emmanuel 
+8. Adebayo Stephen 
+9. Oladunjoye Nathaniel 
+10. Ekundayo Laughter 
+11. Yusuf Babatunde 
+12. Olawuyi Solomon 
+13. Adeyiwola Favour
+14. Adebayo Ifunu Samuel 
+15. Aladesuru Adegbenro 
+16. Akerele oluwadamilola
+
+18th March 
+1. Agu Destiny 
+2. Yusuf Babatunde 
+3. Ogunyemi Emmanuel 
+4. Timothy Austin 
+5. Adeyiwola Favour 
+6. Oluwafemi Israel 
+7. Akomolafe Toyinsola 
+8. Ayodele Olajuwon 
+
+19th March 
+1. Akomolafe Toyinsola 
+2. oluwafemi Israel 
+3. Agu Destiny 
+4. Abolarinwa Femi 
+5. Olawuyi Solomon 
+
+20th March 
+1. Adunbiode Similoluwa 
+2. Olawuyi Solomon 
+3. Timothy Austin 
+4. Jegede Daniel 
+5. Oluwafemi Israel 
+6. Akomolafe Toyinsola 
+7. Adeojo Progress 
+8. Adebayo Stephen 
+9. Adeyiwola Favour 
+10. Yusuf Babatunde 
+11. Omopariola Philip 
+
+21st March 
+1. Oluwafemi Israel 
+2. Akomolafe Toyinsola
+3. Emmanuel Okwedi 
+4. Abolarinwa Femi 
+5. Akerele Oluwadamilola 
+6. Yusuf Babatunde 
+7. Agu Destiny 
+8. Fase Covenant 
+9. Adebayo Ifunu Samuel 
+10. Adeojo Progress
+
+23rd March 
+1. Oluwafemi Israel 
+2. Akomolafe Toyinsola 
+3. Tiwo Oluwaseyi 
+4. Timothy Austin 
+5. Adu moyin 
+6. Agu Destiny 
+7. Adeyiwola Favour 
+8. Yusuf Babatunde 
+9. Abolarinwa Femi 
+10. Aladesuru Adegbenro 
+11. Adeojo Progress 
+
+24th March 2025 
+1. Akomolafe Toyinsola
+2. Yusuf Babatunde 
+3. Oluwafemi Israel 
+4. Adu Moyin
+5. Agu Destiny 
+6. Adeojo Progress 
+7. Adebayo Ifunu Samuel 
+8. Abolarinwa Femi 
+9. Adeyiwola Favour 
+10. Tiwo Oluwaseyi 
+11. Fatile Hepizibah 
+12. Adebayo Stephen
+
+25th March 2026
+1. Tiwo Oluwaseyi
+2. Oluwafemi Israel 
+3. Adu Moyin 
+4. Agu Destiny 
+5. Akerele Damilola 
+6. Yusuf Babatunde 
+7. Akomolafe Toyinsola
+8. Afolalu Oluwatimileyin 
+9. Olawuyi Solomon 
+10. Akolade Victor 
+
+26th March 2025 
+1. Abolarinwa Femi 
+2. Fatile Hepizibah 
+3. Yusuf Babatunde 
+4. Akomolafe Toyinsola 
+5. Oluwafemi Israel 
+6. Adu Moyinoluwa 
+7. Adeojo Progress 
+8. Ekundayo Success 
+9. Agu Destiny 
+10. Akerele Oluwadamilola 
+
+27th March 2026 
+1. Timothy Austin 
+2. Oluwafemi Israel
+3. Jegede Daniel 
+4. Dada Goodnews 
+5. Akomolafe Toyinsola 
+6. Adu Moyinoluwa 
+7. Agu Destiny 
+8. Yusuf Babatunde 
+9. Akerele Damilola 
+10. Adeojo Progress 
+11. Adaron Kola Charles
+12. Adeyiwola Favour 
+13. Adebayo Stephen 
+14. Tiwo Oluwaseyi
+15. Ekundayo Laughter 
+16. Omopariola Philip 
+17. Fatile Hepizibah 
+18. Olarewaju Emmanuel 
+
+28th March 2026 
+1. Fatile Hepizibah 
+2. Akerele Damilola 
+3. Ojuawo Olamide 
+4. Ayodele Olajuwon 
+5. Abolarinwa Femi 
+6. Adeola Beloved 
+7. Aladesuru Adegbenro 
+8. Yusuf Babatunde 
+9. Adeyiwola Favour 
+10. Adaron kola Charles 
+11. Omoparoila Philip 
+12. Oluwafemi Israel 
+13. Timothy Austin 
+14. Agu Destiny 
+15. Dada Goodnews 
+16. Ogunyemi Emmanuel 
+17. Jegede Daniel 
+18. Adaralegbe Emmanuel 
+19. Tiwo Oluwaseyi 
+20. Akomolafe Toyinsola
+21. Olarewaju Emmanuel 
+22. Adebayo Stephen 
+23. Ekundayo Laughter 
+
+25th April 2026 
+1. Ogunyemi Emmanuel 
+2. oluwafemi Israel 
+3. Yusuf Babatunde 
+4. Adaron kola Charles 
+5. Olajiga Divine 
+6. Abolarinwa Femi 
+7. Adeojo progress 
+8. Timothy Austin 
+9. Oladunjoye Nathaniel 
+10. Abu Isaac 
+11. Temitope David 
+12. Agu Destiny 
+13. Ajayi Dolapo 
+14. Awoyemi Ayomide
+15. Fatile Hepizibah 
+
+27th April 2026 
+1. oluwafemi Israel 
+2. Agu Destiny 
+3. Akomolafe Toyinsola 
+4. Timothy Austin
+5. Olawuyi Solomon 
+6. Yusuf Babatunde 
+7. Oladunjoye Nathaniel 
+8. Ariyo living Faith 
+9. Olajiga Divine 
+10. Aladesuru Adegbenro 
+11. Adaralegbe Emmanuel 
+12. Omopariola Philip 
+13. Adebayo Stephen 
+14. Dada Goodnews 
+15. Akerele Damilola 
+16. Fagbohun Jonathan 
+17. Olanrewaju Emmanuel 
+18. Awoyemi Ayomide 
+19. Adeojo Progress 
+20. Tiwo Oluwaseyi 
+21. Ekundayo laughter 
+22. Adaron kola Charles 
+23. Fatile Hepizibah 
+24. Ekundayo success 
+
+28th April 2026 
+1. salihu abdulsamad 
+2. Tiwo Oluwaseyi 
+3. Agu Destiny 
+4. Olawuyi Solomon 
+5. oluwafemi Israel 
+6. Adaron-kola Charles 
+7. Akomolafe Toyinsola 
+8. Yusuf Babatunde 
+9. Ariyo living Faith 
+10. Ajetomobi Kayode 
+11. Dada Goodnews 
+12. Olanrewaju Emmanuel 
+13. Fagbohun Jonathan 
+14. Adebayo Steven 
+15. Fatile Hepizibah 
+16. Adu Moyinoluwa 
+17. Oladunjoye Nathaniel 
+18. Adeojo progress 
+19. Omopariola Philip 
+20. akerele Damilola 
+21. Ekundayo laughter 
+22. Awoyemi Ayomide 
+
+29th April 
+1. Tiwo Oluwaseyi 
+2. Agu Destiny 
+3. Fatile Hepizibah 
+4. Olawuyi Solomon 
+5. Timothy Pelumi Austine 
+6. Salihu Abdulsamad 
+7. omopariola Philip
+8. Oluwafemi Israel 
+9. Adaran-kola Charles
+10. Akomolafe Toyinsola 
+11. Yusuf Babatunde 
+12. Abolarinwa Femi 
+13. Ekundayo laughter 
+14. Adebayo Stephen 
+15. Dada Goodnews
+16. Ayodele Olajuwon 
+17. olanrewaju Emmanuel 
+18. Afolalu Oluwatimileyin Christopher 
+19. oluwole Christopher 
+20. adu Moyinoluwa 
+21. akerele Damilola 
+22. Arisa Damilare 
+23. Adeojo Progress 
+24. Ariyo living Faith 
+25. Oladunjoye Nathaniel 
+26. Awoyemi Ayomide
+27. Ayanna Feranmi 
+28. Jegede Daniel 
+29. Akinsoji Heritage 
+
+30th  April 2026 
+1. Tiwo Oluwaseyi 
+2. omopariola Philip 
+3. oluwafemi Israel 
+4. Agu Destiny 
+5. Adaran kola Charles 
+6. Akomolafe Toyinsola 
+7. Olawuyi Solomon 
+8. Timothy Pelumi Austine 
+9. Adeojo Progress 
+10. aladesuru Adegbenro 
+11. olajiga Divine 
+12. Dada Goodnews 
+13. olokun oluwafemi 
+14. Adu moyinoluwa
+15. Adebayo Stephen 
+16. Olanrewaju Emmanuel 
+17. Akerele Oluwadamilola 
+18. Adebayo Ifunu Samuel
+19. oluwole Christopher 
+20. fatile Hepizibah 
+
+1st may 2026
+1. TIWO OLUWASEYI 
+2. AGU DESTINY 
+3. OLUWAFEMI ISRAEL
+4. TIMOTHY PELUMI AUSTINE 
+5. OLAWUYI SOLOMON 
+6. ADEBAYO IFUNU SAMUEL
+7. DADA GOODNEWS 
+8. ADARAN-KOLA. CHARLES 
+9. ADEGBOYEGA SAMUEL 
+10. ALADESURU ADEGBENRO 
+11. SALIHU ABDULSAMAD 
+12. AKOMOLAFE TOYINSOLA 
+13. YUSUF BABATUNDE 
+14. ADU MOYINOLUWA 
+15. AKINSOJI HERITAGE 
+16. AKERELE DAMILOLA 
+17. ABOLARINWA FEMI 
+
+2nd may 2026 
+1. TIWO OLUWASEYI 
+2. ADEGBOYEGA SAMUEL 
+3. OLUWAFEMI ISRAEL
+4. AGU DESTINY 
+5. ABOLARINWA FEMI 
+6. AKOMOLAFE TOYINSOLA 
+7. YUSUF BABATUNDE 
+8. ADARAN-KOLA CHARLES 
+9. OMOPARIOLA PHILIP 
+10. OLADUNJOYE NATHANIEL 
+11. AKERELE DAMILOLA 
+12. ADEBAYO STEVEN
+13. AYODELE OLUWAJUWON 
+14. FATILE HEPIZIBAH 
+15. ADEBAYO EMMANUEL 
+16. EKUNDAYO LAUGHTER 
+17. OLAWUYI SOLOMON
+
+4th may 2026 
+1. TIWO OLUWASEYI 
+2. AGU DESTINY 
+3. ADEGBOYEGA SAMUEL 
+4. AKOMOLAFE TOYINSOLA 
+5. AWOYEMI AYOMIDE 
+6. DADA GOODNEWS 
+7. ADEOJO PROGRESS 
+8. OLADUNJOYE NATHANIEL 
+9. YUSUF BABATUNDE 
+10. TIMOTHY PELUMI AUSTINE 
+11. EKUNDAYO LAUGHTER 
+12. ADEBAYO STEPHEN 
+13. ADARAN-KOLA CHARLES 
+14. FATILE HEPIZIBAH 
+15. OLUWAFEMI ISRAEL 
+16. ABOLARINWA FEMI 
+17. AKERELE DAMILOLA 
+18. ALADESURU ADEGBENRO 
+19. OLAWUYI SOLOMON 
+
+5th may 2026 
+1. YUSUF BABATUNDE 
+2. TIWO OLUWASEYI 
+3. ADARAN KOLA CHARLES 
+4. OLIWAFEMI ISRAEL 
+5. OLAWUYI SOLOMON 
+6. AKOMOLAFE TOYINSOLA 
+7. OLAJIGA DIVINE 
+8. EKUNDAYO LAUGHTER 
+9. OLADUNJOYE NATHANIEL 
+10. AYODELE OLAJUWON 
+11. ABOLARINWA FEMI 
+12. ADEBAYO STEPHEN 
+13. DADA GOODNEWS 
+14. AKERELE DAMILOLA 
+15. ADEOJO PROGRESS 
+16. OLARENWAJU EMMANUEL 
+17. FATILE HEPZIBAH 
+18. ADU MOYINOLUWA 
+19. AGU DESTINY 
+
+6th may 2025 
+1. ADEBAYO IFUNU SAMUEL 
+2. EKUNDAYO LAUGHTER 
+3. ADEBAYO STEPHEN 
+4. ADEOJO PROGRESS 
+5. DADA GOODNEWS 
+6. YUSUF BABATUNDE 
+7. OLUWAFEMI ISRAEL 
+8. AGU DESTINY 
+9. FATILE HEPZIBAH 
+10. OLANREWAJU EMMANUEL 
+11. ADARAN KOLA CHARLES 
+12. AKERELE DAMILOLA 
+13. TIMOTHY PELUMI  AUSTINE 
+14. OLADUNJOYE NATHANIEL
+15. ALADESURU ADEGBENRO 
+16. OMOPARIOLA PHILIP
+17. AKOMOLAFE TOYINSOLA 
+18. OLAWUYI SOLOMON 
+
+
+7th may 2026 
+1. AGU DESTINY 
+2. YUSUF BABATUNDE 
+3. OLUWAFEMI ISRAEL 
+4. OLANREWAJU EMMANUEL 
+5. FATILE HEPIZIBAH 
+6. OMOPARIOLA PHILIP 
+7. ADU MOYINOLUWA 
+8. TIMOTHY PELUMI AUSTINE 
+9. AKOMOLAFE TOYINSOLA 
+10. DADA GOODNEWS 
+11. ADEBAYO STEPHEN 
+12. AKERELE DAMILOLA 
+13. AYODELE OLAJUWON 
+14. EKUNDAYO LAUGHTER 
+15. ADEOJO PROGRESS 
+16. OLAJIGA DIVINE 
+17. OLADUNJOYE NATHANIEL 
+18. TIWO OLUWASEYI 
+
+8th may 2026 
+1. AKOMOLAFE TOYINSOLA 
+2. YUSUF BABATUNDE 
+3. ADARAN KOLA CHARLES 
+4. TIWO OLUWASEYI 
+
+
+9th may 2026
+1. TIWO OLUWASEYI 
+2. ADEOJO PROGRESS 
+3. ADU MOYINOLUWA 
+4. OLADUNJOYE NATHANIEL 
+5. AGU DESTINY 
+6. OLAWUYI SOLOMON 
+7. DADA GOODNEWS 
+8. AKOMOLAFE TOYINSOLA 
+9. EKUNDAYO LAUGHTER 
+10. YUSUF BABATUNDE 
+11. TIMOTHY PELUMI AUSTINE 
+12. AKERELE DAMILOLA 
+13. ALADESURU ADEGBENRO 
+14. ADARAN KOLA CHARLES 
+
+11th may 2026 
+1. Fagbohun Jonathan 
+2. Adebayo Stephen 
+3. Omoniyi John 
+4. Adu Moyinoluwa 
+5. Olawuyi Solomon 
+6. Olajiga Divine 
+7. Akerele Damilola
+8. Ekundayo laughter 
+9. Adeojo Progress 
+10. Ogunyemi Emmanuel 
+11. Adebayo Ifunu Samuel 
+12. Adaran kola Charles 
+13. Timothy Austin 
+14. oladunjoye Nathaniel 
+15. Awoyemi ayomide
+16. Adaralegbe Emmanuel 
+17. Aladesuru Adegbenro 
+18. Tiwo Oluwaseyi 
+19. agu destiny 
+20. Adeyiwola Favour 
+21. Dada Goodnews 
+22. Oluwafemi Israel 
+
+
+12th may 
+1. Akonolafe Toyinsole 100lvl
+2. Damilola 100lvl
+3. Stephen 100lvl
+4. Favour 100lvl
+5. Samuel 200lvl
+6. Goodnews 100lvl
+7. Austin 100lvl
+8. Destiny 100lvl
+9. Solomon100lvl
+10. Bobola 200lvl
+11. Oluwaseyi 100ovl
+12. Shina 200lv
+13. Itunu Samuel 100lvl
+14. Ayobayo 300lvl
+15. Pipeloluwa 300lvl
+16. Stephen 300lvvl
+17. TAIWO 200lvl
+18. Oladunjole Nataniel 100lvl
+19. Yusuf babatunde 100lvl
+20. Adeojo progress 100lvl
+21. Ayomide Adeola 200lvl
+22. Adeola bidemi200lvl
+23. Laughter 100lvl
+24. Iyiola 300lvl
+25. Owolabi Emmanuel 
+26. Oluwafemi Israel 
+27. Olajiga Divine
+28. ADARANA KOLA CHARLES 
+
+13th may 2026
+1. TIWO OLUWASEYI 
+2. AGU DESTINY 
+3. ADEBAYO IFUNU SAMUEL 
+4. YUSUF BABATUNDE 
+5. TIMOTHY AUSTINE PELUMI 
+6. ADEOJO PROGRESS 
+7. ALADESURU ADEGBENRO 
+8. ADEBAYO STEPHEN 
+9. ADEYIWOLA FAVOUR 
+10. OLUWAFEMI ISRAEL 
+11. ADARAN KOLA CHARLES 
+12. ADU MOYINOLUWA 
+13. OLADUNJOYE NATHANIEL 
+14. EKUNDAYO LAUGHTER 
+15. OLAJIGA DIVINE 
+16. AKERELE DAMILOLA 
+17. AKOMOLAFE TOYINSOLA 
+18. FOLORUNSHO VICTOR 
+19. DADA GOODNEWS 
+
+14th may 2026
+1. AGU DESTINY 
+2. AKERELE DAMILOLA 
+3. ADEYIWOLA FAVOUR 
+4. ADARON KOLA CHARLES 
+5. EKUNDAYO LAUGHTER 
+6. ADEBAYO STEPHEN
+7. YUSUF BABATUNDE 
+8. TIMOTHY AUSTINE 
+9. OLAJIGA DIVINE 
+10. OLUWAFEMI ISRAEL 
+11. OLAWUYI SOLOMON
+12. AKOMOLAFE TOYINSOLA 
+13. OLADUNJOYE NATHANIEL 
+14. TIWO OLUWASEYI 
+15. ADEOJO PROGRESS
+
+15th may 2026 
+1. JEGEDE DANIEL 
+2. AGU DESTINY 
+3. ABOLARINWA FEMI 
+4. OLAWUYI SOLOMON 
+5. AYODELE OLAJUWON 
+6. DADA GOODNEWS 
+7. OLADUNJOYE NATHANIEL 
+8. TIWO OLUWASEYI 
+9. AWOYEMI AYOMIDE 
+10. EKUNDAYO LAUGHTER 
+11. ADU MOYINOLUWA 
+12. OLAJIGA DIVINE 
+13. OLAYIWOLA
+14. ADARAN KOLA CHARLES 
+15. BAMIDELE MIRACLE 
+16. ALADESURU ADEGBENRO 
+17. ADEBAYO STEPHEN 
+18. ADEOJO PROGRESS 
+19. ADEYIWOLA FAVOUR 
+20. OLUWAFEMI ISRAEL 
+21. AKINSOJI HERITAGE 
+22. ADUNBIODE SIMILOLUWA 
+23. TIMOTHY AUSTINE 
+24. AKOMOLAFE TOYINSOLA 
+25. YUSUF BABATUNDE 
+
+16th may 2026 
+1. EKUNDAYO LAUGHTER 
+2. AGU DESTINY 
+3. OLUWAFEMI ISRAEL 
+4. AKOMOLAFE TOYINSOLA 
+5. TIMOTHY AUSTIN 
+6. ADARAN KOLA CHARLES 
+7. OLAWUYI SOLOMON 
+8. ADEYIWOLA FAVOUR 
+9. ALADESURU ADEGBENRO 
+10. TIWO OLUWASEYI 
+11. OGUNYEMI EMMANUEL 
+12. AFOLALU CHRISTOPHER 
+13. ABOLARINWA FEMI 
+14. ADEBAYO IFUNU SAMUEL 
+15. FATILE HEPIZIBAH 
+16. ADEBAYO STEPHEN 
+
+18th May 2026
+1. ABOLARINWA FEMI 
+2. FATILE HEPZIBAH 
+3. OLARENWAJU EMMANUEL 
+4. EKUNDAYO LAUGHTER 
+5. ADEBAYO STEPHEN
+6. OLADUNJOYE NATHANIEL 
+7. AGU DESTINY
+8. YUSUF BABATUNDE 
+9. AKERELE DAMILOLA 
+10. AKOMOLAFE TOYINSOLA 
+11. AYANNA FERANMI 
+12. AWOYEMI AYOMIDE 
+13. ADEOLA BELOVED 
+14. ADEBAYO IFUNU SAMUEL 
+15. ADARAN KOLA CHARLES 
+16. ADEYIWOLA FAVOUR 
+17. ALADESURU ADEGBENRO 
+18. ADEOJO PROGRESS 
+19. TIWO OLUWASEYI 
+20. TIMOTHY AUSTIN 
+21. DADA GOODNEWS 
+
+19th May 2026 
+1. AGU DESTINY
+2. OLUWAFEMI ISRAEL 
+3. OLAWUYI SOLOMON 
+4. TIMOTHY AUSTINE 
+5. ADEOJO PROGRESS 
+6. AKOMOLAFE TOYINSOLA 
+7. ADARAN KOLA CHARLES 
+8. ADEYIWOLA FAVOUR 
+9. OLADUNJOYE NATHANIEL 
+10. ARIYO LIVING FAITH 
+11. ABOLARINWA FEMI 
+12. TIWO OLUWASEYI 
+13. OLAJIGA DIVINE 
+14. DADA GOODNEWS 
+15. OLANREWAJU EMMANUEL 
+16. FATILE HEPZIBAH 
+17. AYODELE OLAJUWON 
+18. ADEBAYO IFUNU SAMUEL
+
+20th may 2026 
+1. YUSUF BABATUNDE 
+2. TIMOTHY AUSTINE 
+3. ADEYIWOLA FAVOUR 
+4. OLUWAFEMI ISRAEL 
+5. OLAWUYI SOLOMON 
+6. ADARAN KOLA CHARLES 
+7. ADU MOYINOLUWA 
+8. AGU DESTINY 
+9. DADA GOODNEWS 
+10. ADEOLA BELOVED 
+11. ADEOJO PROGRESS 
+12. ABOLARINWA FEMI. 
+13. EKUNDAYO LAUGHTER 
+14. ADEBAYO STEPHEN 
+15. BAMIGBOYE SAMUEL 
+16. OLADUNJOYE NATHANIEL 
+17. AKERELE DAMILOLA 
+18. JEGEDE DANIEL 
+19. FATILE HEPZIBAH 
+20. OLANREWAJU EMMANUEL 
+21. AYODELE OLAJUWON 
+22. OLAJIGA DIVINE 
+23. TIWO OLUWASEYI 
+
+21st May 2026 
+1. TIMOTHY AUSTINE 
+2. OLUWAFEMI ISRAEL 
+3. YUSUF BABATUNDE 
+4. ADU MOYINOLUWA 
+5. AGU DESTINY 
+6. AKOMOLAFE TOYINSOLA 
+7. ADEYIWOLA FAVOUR 
+8. ADARAN KOLA CHARLES 
+9. OGUNYEMI EMMANUEL 
+10. ADEOJO PROGRESS 
+11. ALADESURU ADEGBENRO 
+12. BAMIGBOYE SAMUEL 
+13. OLADUNJOYE NATHANIEL 
+14. AKERELE DAMILOLA 
+15. ADEBAYO STEPHEN 
+16. EKUNDAYO LAUGHTER 
+17. FATILE HEPZIBAH 
+18. OLANREWAJU EMMANUEL 
+19. OLAWUYI SOLOMON 
+
+22nd May 2026 
+1. AKERELE DAMILOLA 
+2. AGU DESTINY 
+3. TIWO OLUWASEYI 
+4. TIMOTHY AUSTINE 
+5. ADEYIWOLA FAVOUR 
+6. AKOMOLAFE TOYINSOLA 
+7. ADARAN KOLA CHARLES 
+8. OLAWUYI SOLOMON 
+9. OJUAWO OLAMIDE 
+
+23rd May 2026 
+1. AGU DESTINY 
+2. ADEYIWOLA FAVOUR 
+3. TIMOTHY AUSTINE 
+4. OLAWUYI SOLOMON 
+5. EKUNDAYO LAUGHTER 
+6. ADEOJO PROGRESS 
+7. OLADUNJOYE NATHANIEL 
+8. YUSUF BABATUNDE 
+9. AKERELE DAMILOLA 
+10. OLUWAFEMI ISRAEL 
+11. BAMIGBOYE SAMUEL 
+12. FATILE HEPZIBAH 
+13. ADU MOYINOLUWA 
+14. AKOMOLAFE TOYINSOLA 
+15. ADARAN KOLA CHARLES 
+
+26th may 2026 
+1. OLUWAFEMI ISRAEL 
+2. YUSUF BABATUNDE 
+3. AKOMOLAFE TOYINSOLA 
+4. ADEYIWOLA FAVOUR 
+5. ADARAN KOLA CHARLES 
+6. ALADESURU ADEGBENRO 
+7. OLADUNJOYE NATHANIEL 
+8. ADEOJO PROGRESS 
+9. AGU DESTINY 
+10. OLAWUYI SOLOMON 
+11. BAMIGBOYE SAMUEL 
+12. EKUNDAYO SUCCESS 
+13. EKUNDAYO LAUGHTER 
+14. ADEBAYO STEPHEN 
+15. OLANREWAJU EMMANUEL 
+16. TIMOTHY AUSTINE 
+
+27th may 2026 
+1. AGU DESTINY 
+2. ADU MOYINOLUWA 
+3. ADARAN KOLA CHARLES 
+4. YUSUF BABATUNDE 
+5. TIMOTHY AUSTIN
+6. AKOMOLAFE TOYINSOLA 
+7. DADA GOODNEWS 
+8. OLUWAFEMI ISRAEL 
+9. OLAJIGA DIVINE 
+10. ADEYIWOLA FAVOUR 
+11. ALADESURU ADEGBENRO 
+12. ADEBAYO STEPHEN 
+13. EKUNDAYO LAUGHTER 
+14. OGUNYEMI EMMANUEL 
+15. OLAWUYI SOLOMON 
+
+28th May 2026 
+1. AGU DESTINY 
+2. ABOLARINWA FEMI
+3. ALADESURU ADEGBENRO 
+4. OLAWUYI SOLOMON 
+5. ADARAN KOLA CHARLES 
+6. TIWO OLUWASEYI 
+7. TIMOTHY AUSTIN 
+8. OGUNYEMI EMMANUEL 
+9. ADEYIWOLA FAVOUR 
+10. AKOMOLAFE TOYINSOLA 
+11. YUSUF BABATUNDE 
+12. OMOPARIOLA PHILIP 
+13. OLUWAFEMI ISRAEL 
+14. EKUNDAYO LAUGHTER 
+15. ADEBAYO STEPHEN 
+16. OLANREWAJU EMMANUEL 
+17. FATILE HEPIZIBAH 
+
+29th MAY 2026 .
+1. IBIJOLA ADEBOBOLA
+2. AKINMOLAFE SHINA
+3. YUSUF BABATUNDE 
+4. OLAWUYI SOLOMON 
+5. ADEYIWOLA FAVOUR 
+6. DAMOLA  200LVL
+7. TIMOTHY USTIN
+8. TOYINSOLE 100LVL
+9. ADARAN KOLA CHARLES 
+10. JOSEPH OZOVEHE SAMUEL 
+11. EKUNDAYO LAUGHTER
+12. DADA GOODNEWS
+13. ADEBAYO STEPHEN
+14. OGUNJOBI IYIOLA
+15. BABATUNDE PIPELOLUWA DAVID 
+16. OWOLABI KEHINDE 
+17. EFOGHERE STEPHEN
+18. DADA SHOLA CHRISTOPHER 
+19. MR. NATHANIEL 
+20. EMINOWA TIMILEYIN
+21. AYOBAYO 300LVL
+22. TIWO OLUWASEYI 
+23. AGU DESTINY 
+24. GOODNESS 300L
+
+30th May 2026 
+1. OLUWAFEMI ISRAEL 
+2. AGU DESTINY 
+3. ADARAN KOLA CHARLES 
+4. ADEYIWOLA FAVOUR 
+5. ADEOJO PROGRESS 
+6. ADEBAYO STEPHEN 
+7. EKUNDAYO LAUGHTER 
+8. TIWO OLUWASEYI  
+9. YUSUF BABATUNDE 
+10. OLANREWAJU EMMANUEL 
+11. FATILE HEPZIBAH 
+
+2nd JUNE 2026 
+1. AKERELE DAMILOLA 
+2. OLANREWAJU EMMANUEL 
+3. ADEOJO PROGRESS 
+4. ADARAN KOLA CHARLES 
+5. ADEBAYO STEPHEN 
+6. DADA GOODNEWS 
+7. EKUNDAYO LAUGHTER 
+8. OLADUNJOYE NATHANIEL 
+9. OLAWUYI SOLOMON 
+10. OGUNYEMI EMMANUEL 
+11. OLADUNJOYE NATHANIEL 
+12. YUSUF BABATUNDE 
+13. FATILE HEPZIBAH 
+14. AKOMOLAFE TOYINSOLA 
+15. TIMOTHY AUSTIN 
+16. ALADESURU ADEGBENRO 
+17. OLUWAFEMI ISRAEL 
+18. TIWO OLUWASEYI 
+19. AGU DESTINY 
+20. ADEYIWOLA FAVOUR
+
+3rd JUNE 2026
+   1. JEGEDE DANIEL
+2. OLUWAFEMI ISRAEL 
+3. TIMOTHY AUSTINE 
+4. AKOMOLAFE TOYINSOLA 
+5. ADEYIWOLA FAVOUR 
+6. OLAWUYI SOLOMON 
+7. YUSUF BABATUNDE 
+8. AGU DESTINY 
+9. OLADUNJOYE NATHANIEL 
+10. ADEOJO PROGRESS 
+11. FATILE HEPZIBAH 
+12. OLAJIGA DIVINE 
+13. ABOLARINWA FEMI 
+14. ARIYO LIVING FAITH 
+15. OLANREWAJU EMMANUEL 
+16. ADEBAYO IFUNU SAMUEL 
+
+4th JUNE 2026 
+1. ADEYIWOLA FAVOUR 
+2. TIMOTHY AUSTINE 
+3. OLUWAFEMI ISRAEL 
+4. OLAWUYI SOLOMON 
+5. AKOMOLAFE TOYINSOLA 
+6. ADARAN KOLA CHARLES 
+7. YUSUF BABATUNDE 
+8. AGU DESTINY 
+9. ADU MOYINOLUWA 
+10. TIWO OLUWASEYI 
+11. AKERELE DAMILOLA 
+12. OLANREWAJU EMMANUEL 
+
+5th JUNE 2026
+1. YUSUF BABATUNDE 
+2. OLUWAFEMI ISRAEL 
+3. TIMOTHY AUSTINE 
+4. AKOMOLAFE TOYINSOLA 
+5. ADARAN KOLA CHARLES 
+6. DADA GOODNEWS 
+7. OLAWUYI SOLOMON 
+8. EKUNDAYO SUCCESS 
+9. TIWO OLUWASEYI 
+10. AYANNA FERANMI 
+11. AGU DESTINY 
+12. ABOLARINWA FEMI 
+13. EKUNDAYO LAUGHTER 
+14. ADEBAYO STEPHEN
+`;
+
+export const getInitialAttendance = (allStudents: Student[]): AttendanceRecord[] => {
+  return [];
+};

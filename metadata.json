@@ -1,0 +1,10 @@
+{
+  "name": "FaithTrack",
+  "description": "Chapel & Morning Devotion Attendance System",
+  "requestFramePermissions": [
+    "camera"
+  ],
+  "majorCapabilities": [
+    "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
+  ]
+}
