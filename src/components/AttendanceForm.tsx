@@ -30,14 +30,19 @@ export function AttendanceForm({ type, title, metadata }: AttendanceFormProps) {
   const [newLevel, setNewLevel] = useState('100L');
   const [statusOverride, setStatusOverride] = useState<'Auto' | 'Early' | 'Present' | 'Late' | 'Absent'>('Auto');
 
+  const [settings, setSettings] = useState<any>(null);
+
   React.useEffect(() => {
-    setStudents(db.getStudents().sort((a, b) => a.full_name.localeCompare(b.full_name)));
+    db.getStudents().then(list => {
+      setStudents(list.sort((a, b) => a.full_name.localeCompare(b.full_name)));
+    });
+    db.getSettings().then(setSettings);
   }, []);
 
-  const handleSearch = (e: React.FormEvent) => {
+  const handleSearch = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!matric) return;
-    const found = db.getStudentByMatric(matric);
+    const found = await db.getStudentByMatric(matric);
     if (found) {
       setStudent(found);
       setIsNew(false);
@@ -53,13 +58,13 @@ export function AttendanceForm({ type, title, metadata }: AttendanceFormProps) {
     }
   };
 
-  const handleAddNewAndSubmit = (e: React.FormEvent) => {
+  const handleAddNewAndSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!newFullName || !newMatric) {
       alert("Please provide both Full Name and Matric Number.");
       return;
     }
-    const newStudent = db.saveStudent({
+    const newStudent = await db.saveStudent({
       id: crypto.randomUUID(),
       created_at: new Date().toISOString(),
       full_name: newFullName,
@@ -74,19 +79,19 @@ export function AttendanceForm({ type, title, metadata }: AttendanceFormProps) {
     }, 0);
   };
 
-  const submitAttendanceForStudent = (targetStudent: Student) => {
+  const submitAttendanceForStudent = async (targetStudent: Student) => {
     // Determine status based on time
-    const settings = db.getSettings();
+    const currentSettings = settings || await db.getSettings();
     let isLate = false;
     const now = new Date();
     const timeString = formatLagos(now, 'HH:mm');
     
     if (type === 'Chapel') {
-      isLate = timeString > settings.chapelLateTime;
+      isLate = timeString > currentSettings.chapelLateTime;
     } else if (type === 'School') {
-      isLate = timeString > settings.schoolLateTime;
+      isLate = timeString > currentSettings.schoolLateTime;
     } else {
-      isLate = timeString > settings.devotionLateTime;
+      isLate = timeString > currentSettings.devotionLateTime;
     }
 
     let finalStatus: 'Present' | 'Late' | 'Absent' | 'Early';
@@ -96,7 +101,7 @@ export function AttendanceForm({ type, title, metadata }: AttendanceFormProps) {
       finalStatus = isLate ? 'Late' : 'Present';
     }
 
-    db.saveAttendance({
+    await db.saveAttendance({
       student_id: targetStudent.id,
       student_name: targetStudent.full_name,
       matric_number: targetStudent.matric_number,
@@ -108,14 +113,15 @@ export function AttendanceForm({ type, title, metadata }: AttendanceFormProps) {
     });
 
     setSuccess(true);
-    setTimeout(() => {
+    setTimeout(async () => {
       setSuccess(false);
       setStudent(null);
       setMatric('');
       setIsNew(false);
       setStatusOverride('Auto');
       // Refresh students list
-      setStudents(db.getStudents().sort((a, b) => a.full_name.localeCompare(b.full_name)));
+      const list = await db.getStudents();
+      setStudents(list.sort((a, b) => a.full_name.localeCompare(b.full_name)));
     }, 3000);
   };
 
@@ -289,7 +295,7 @@ export function AttendanceForm({ type, title, metadata }: AttendanceFormProps) {
                     </svg>
                   </div>
                   <h3 className="text-xl font-medium text-gray-900">Attendance Recorded!</h3>
-                  <p className="text-gray-500">Thank you, {student.full_name}.</p>
+                  <p className="text-gray-500">Thank you, {student?.full_name}.</p>
                 </div>
               ) : (
                 <div className="space-y-6">
@@ -298,15 +304,15 @@ export function AttendanceForm({ type, title, metadata }: AttendanceFormProps) {
                     <dl className="grid grid-cols-1 gap-x-4 gap-y-4 sm:grid-cols-2">
                       <div>
                         <dt className="text-sm font-medium text-gray-500">Full Name</dt>
-                        <dd className="mt-1 text-sm text-gray-900">{student.full_name}</dd>
+                        <dd className="mt-1 text-sm text-gray-900">{student?.full_name}</dd>
                       </div>
                       <div>
                         <dt className="text-sm font-medium text-gray-500">Department</dt>
-                        <dd className="mt-1 text-sm text-gray-900">{student.department}</dd>
+                        <dd className="mt-1 text-sm text-gray-900">{student?.department}</dd>
                       </div>
                       <div>
                         <dt className="text-sm font-medium text-gray-500">Level</dt>
-                        <dd className="mt-1 text-sm text-gray-900">{student.level}</dd>
+                        <dd className="mt-1 text-sm text-gray-900">{student?.level}</dd>
                       </div>
                       <div className="sm:col-span-2">
                         <dt className="text-sm font-medium text-gray-500 mb-1">Status Override (Optional)</dt>

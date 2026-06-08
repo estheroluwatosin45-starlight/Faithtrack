@@ -13,8 +13,12 @@ export default function AdminDashboard() {
   const [attendance, setAttendance] = useState<AttendanceRecord[]>([]);
 
   useEffect(() => {
-    setStudents(db.getStudents());
-    setAttendance(db.getAttendance());
+    Promise.all([db.getStudents(), db.getAttendance()])
+      .then(([studentsList, attendanceList]) => {
+        setStudents(studentsList);
+        setAttendance(attendanceList);
+      })
+      .catch(err => console.error(err));
   }, []);
 
   const today = getLagosTodayStr();

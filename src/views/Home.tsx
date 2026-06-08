@@ -1,7 +1,7 @@
 import { Button } from '../components/ui/Button';
 import { Card, CardContent } from '../components/ui/Card';
 import { ShieldCheck, BookOpen, Clock, CalendarCheck, GraduationCap, Search } from 'lucide-react';
-import { Link } from 'react-router-dom';
+import Link from 'next/link';
 import { useState, useEffect } from 'react';
 import { db } from '../lib/db';
 import { AttendanceRecord } from '../types';
@@ -13,9 +13,10 @@ export default function Home() {
   const [searchTerm, setSearchTerm] = useState('');
 
   useEffect(() => {
-    const allRecords = db.getAttendance();
-    allRecords.sort((a, b) => new Date(b.check_in_time).getTime() - new Date(a.check_in_time).getTime());
-    setRecords(allRecords);
+    db.getAttendance().then(allRecords => {
+      allRecords.sort((a, b) => new Date(b.check_in_time).getTime() - new Date(a.check_in_time).getTime());
+      setRecords(allRecords);
+    }).catch(err => console.error(err));
   }, []);
 
   const filtered = records.filter(r => {
@@ -53,13 +54,13 @@ export default function Home() {
             A digital platform for managing School, Chapel, and Morning Devotion attendance efficiently and accurately. Mark your attendance securely, or manage participation directly.
           </p>
           <div className="mt-10 flex flex-col sm:flex-row items-center justify-center gap-4">
-            <Link to="/school">
+            <Link href="/school">
               <Button size="lg" className="rounded-full px-8 bg-blue-600 hover:bg-blue-700 w-full sm:w-auto">School Check-in</Button>
             </Link>
-            <Link to="/devotion">
+            <Link href="/devotion">
               <Button size="lg" className="rounded-full px-8 w-full sm:w-auto">Devotion Check-in</Button>
             </Link>
-            <Link to="/chapel">
+            <Link href="/chapel">
               <Button size="lg" className="rounded-full px-8 bg-gray-900 hover:bg-gray-800 w-full sm:w-auto">Chapel Check-in</Button>
             </Link>
           </div>

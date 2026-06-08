@@ -19,8 +19,12 @@ export default function AdminReports() {
   } | null>(null);
 
   useEffect(() => {
-    setStudents(db.getStudents());
-    setAttendance(db.getAttendance());
+    Promise.all([db.getStudents(), db.getAttendance()])
+      .then(([studentsList, attendanceList]) => {
+        setStudents(studentsList);
+        setAttendance(attendanceList);
+      })
+      .catch(err => console.error(err));
   }, []);
 
   const handleSearch = (e: React.FormEvent) => {

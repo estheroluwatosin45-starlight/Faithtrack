@@ -24,8 +24,12 @@ export default function AdminStudents() {
   });
 
   useEffect(() => {
-    setStudents(db.getStudents());
-    setAttendance(db.getAttendance().filter(a => a.type === 'Devotion'));
+    Promise.all([db.getStudents(), db.getAttendance()])
+      .then(([studentsList, attendanceList]) => {
+        setStudents(studentsList);
+        setAttendance(attendanceList.filter(a => a.type === 'Devotion'));
+      })
+      .catch(err => console.error(err));
   }, []);
 
   const devotionCounts = useMemo(() => {
@@ -50,32 +54,34 @@ export default function AdminStudents() {
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (editingId) {
       const studentToUpdate = students.find(s => s.id === editingId);
       if (studentToUpdate) {
-        db.saveStudent({
+        await db.saveStudent({
           ...studentToUpdate,
           ...formData
         });
       }
     } else {
-      db.saveStudent({
+      await db.saveStudent({
         ...formData,
         id: crypto.randomUUID(),
         created_at: new Date().toISOString()
-      });
+      } as Student);
     }
-    setStudents(db.getStudents());
+    const updatedStudents = await db.getStudents();
+    setStudents(updatedStudents);
     setShowAddForm(false);
     setEditingId(null);
     setFormData({ matric_number: '', full_name: '', department: '', faculty: '', level: '100L', email: '' });
   };
 
-  const handleDelete = (id: string) => {
-    db.deleteStudent(id);
-    setStudents(db.getStudents());
+  const handleDelete = async (id: string) => {
+    await db.deleteStudent(id);
+    const updatedStudents = await db.getStudents();
+    setStudents(updatedStudents);
     setConfirmingDeleteId(null);
   };
 
@@ -84,7 +90,7 @@ export default function AdminStudents() {
     if (!file) return;
 
     const reader = new FileReader();
-    reader.onload = (evt) => {
+    reader.onload = async (evt) => {
       try {
         const bstr = evt.target?.result;
         const wb = XLSX.read(bstr, { type: 'binary' });
@@ -93,7 +99,8 @@ export default function AdminStudents() {
         const data = XLSX.utils.sheet_to_json(ws);
         
         let count = 0;
-        data.forEach((row: any) => {
+        const promises: Promise<any>[] = [];
+        for (const row of (data as any[])) {
           // Normalize keys to lowercase for flexible matching
           const normalizedRow: Record<string, string> = {};
           Object.keys(row).forEach(key => {
@@ -104,7 +111,7 @@ export default function AdminStudents() {
           const name = normalizedRow['fullname'] || normalizedRow['name'] || normalizedRow['studentname'];
           
           if (name) {
-            db.saveStudent({
+            promises.push(db.saveStudent({
               id: crypto.randomUUID(),
               matric_number: matric,
               full_name: name,
@@ -113,12 +120,14 @@ export default function AdminStudents() {
               level: normalizedRow['level'] || '100L',
               email: normalizedRow['email'] || '',
               created_at: new Date().toISOString()
-            });
+            } as Student));
             count++;
           }
-        });
+        }
         
-        setStudents(db.getStudents());
+        await Promise.all(promises);
+        const updatedStudents = await db.getStudents();
+        setStudents(updatedStudents);
         alert(`Successfully imported ${count} students!`);
       } catch (err) {
         console.error("Error parsing Excel file", err);

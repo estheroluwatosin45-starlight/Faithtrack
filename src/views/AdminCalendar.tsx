@@ -12,7 +12,9 @@ export default function AdminCalendar() {
   const [attendance, setAttendance] = useState<AttendanceRecord[]>([]);
 
   useEffect(() => {
-    setAttendance(db.getAttendance());
+    db.getAttendance()
+      .then(setAttendance)
+      .catch(err => console.error(err));
   }, []);
 
   const selectedDateStr = selectedDate ? formatLagos(selectedDate, 'yyyy-MM-dd') : '';

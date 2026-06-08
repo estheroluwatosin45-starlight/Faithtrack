@@ -13,13 +13,20 @@ export default function AdminSettings() {
   const [showQR, setShowQR] = useState(false);
 
   useEffect(() => {
-    setSettings(db.getSettings());
+    db.getSettings()
+      .then(setSettings)
+      .catch(err => console.error(err));
   }, []);
 
-  const handleSave = (e: React.FormEvent) => {
+  const handleSave = async (e: React.FormEvent) => {
     e.preventDefault();
-    db.saveSettings(settings);
-    alert('Settings saved successfully!');
+    try {
+      await db.saveSettings(settings);
+      alert('Settings saved successfully!');
+    } catch (err) {
+      console.error(err);
+      alert('Failed to save settings.');
+    }
   };
 
   return (
