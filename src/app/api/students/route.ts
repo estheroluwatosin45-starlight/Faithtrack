@@ -95,6 +95,24 @@ export async function POST(req: Request) {
       .single();
 
     if (error) throw error;
+
+    // Propagate changes to attendance records if this is an edit operation
+    if (id && !id.startsWith('student-initial-')) {
+      const { error: updateRecordsError } = await supabase
+        .from('attendance_records')
+        .update({
+          matric_number: data.matric_number,
+          student_name: data.full_name,
+          department: data.department,
+          level: data.level
+        })
+        .eq('student_id', id);
+
+      if (updateRecordsError) {
+        console.error('Failed to update student attendance records:', updateRecordsError);
+      }
+    }
+
     return NextResponse.json(data);
   } catch (err: any) {
     console.error('Error in POST /api/students:', err.message || err);

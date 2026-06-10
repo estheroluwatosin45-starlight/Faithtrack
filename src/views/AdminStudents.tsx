@@ -255,7 +255,7 @@ export default function AdminStudents() {
       setFormData({ matric_number: '', full_name: '', department: '', faculty: '', level: '100L', email: '' });
     } catch (err) {
       console.error(err);
-      alert("Failed to save student.");
+      alert("Failed to save student. Please verify that the matric number is unique and not already registered to another student.");
     }
   };
 
