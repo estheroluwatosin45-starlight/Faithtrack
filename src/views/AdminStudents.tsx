@@ -7,6 +7,168 @@ import { Button } from '../components/ui/Button';
 import { Input } from '../components/ui/Input';
 import { formatLagos, getLagosTodayStr } from '../lib/dateUtils';
 
+// Helper to parse raw 2D grid from Excel and detect columns flexibly (e.g. for PDF converted layouts)
+const parseExcelGrid = (grid: any[][]): Student[] => {
+  if (grid.length === 0) return [];
+
+  let headerRowIndex = -1;
+  let nameColIndex = -1;
+  let matricColIndex = -1;
+  let deptColIndex = -1;
+  let levelColIndex = -1;
+
+  // 1. Search for a header row in the first 15 rows of the grid
+  const maxSearchHeaderRows = Math.min(15, grid.length);
+  for (let r = 0; r < maxSearchHeaderRows; r++) {
+    const row = grid[r];
+    if (!Array.isArray(row)) continue;
+
+    let hasSN = false;
+    let hasName = false;
+    let hasMatric = false;
+
+    row.forEach((cell) => {
+      if (cell === null || cell === undefined) return;
+      const val = String(cell).toLowerCase().trim();
+      
+      if (val === 's/n' || val === 'sn' || val === 's.n' || val === 'serial' || val === 'no' || val === 's.no' || val === 's/no') {
+        hasSN = true;
+      }
+      if (val.includes('name') || val === 'student' || val === 'students') {
+        hasName = true;
+      }
+      if (val.includes('matric') || val.includes('reg') || (val.includes('no') && val.includes('mat'))) {
+        hasMatric = true;
+      }
+    });
+
+    // If we find a row containing at least "Name" or Sn + Name, select it as the header
+    if (hasName || (hasSN && grid[r].some(cell => String(cell).toLowerCase().includes('name')))) {
+      headerRowIndex = r;
+      break;
+    }
+  }
+
+  // 2. Identify column indices based on the found header row
+  if (headerRowIndex !== -1) {
+    const headerRow = grid[headerRowIndex];
+    headerRow.forEach((cell, cIndex) => {
+      if (cell === null || cell === undefined) return;
+      const val = String(cell).toLowerCase().trim().replace(/[^a-z0-9/]/g, '');
+
+      if (val.includes('name') || val === 'student' || val === 'fullname' || val === 'studentname') {
+        nameColIndex = cIndex;
+      }
+      else if (val.includes('matric') || val.includes('reg') || val.includes('id') || (val.includes('no') && val.includes('mat'))) {
+        matricColIndex = cIndex;
+      }
+      else if (val.includes('dept') || val.includes('department') || val.includes('course') || val.includes('programme')) {
+        deptColIndex = cIndex;
+      }
+      else if (val.includes('level') || val.includes('lvl') || val === 'year') {
+        levelColIndex = cIndex;
+      }
+    });
+  }
+
+  // 3. Fallback: If no header row is identified, auto-detect columns by inspecting cell value types!
+  if (nameColIndex === -1) {
+    const colCount = Math.max(...grid.slice(0, 10).map(row => row.length));
+    
+    let bestNameCol = -1;
+    let bestMatricCol = -1;
+    let bestSNCol = -1;
+
+    for (let c = 0; c < colCount; c++) {
+      let nameLikes = 0;
+      let matricLikes = 0;
+      let serialLikes = 0;
+      let sampleRows = 0;
+
+      for (let r = 0; r < Math.min(10, grid.length); r++) {
+        const row = grid[r];
+        if (!Array.isArray(row) || c >= row.length) continue;
+        const cell = row[c];
+        if (cell === null || cell === undefined || String(cell).trim() === '') continue;
+        const val = String(cell).trim();
+        sampleRows++;
+
+        if (/^[a-zA-Z0-9/-]{6,20}$/.test(val) && (val.includes('/') || val.includes('-') || /\d{3,}/.test(val))) {
+          matricLikes++;
+        }
+        else if (/^[a-zA-Z\s]{5,40}$/.test(val) && val.includes(' ')) {
+          nameLikes++;
+        }
+        else if (/^\d{1,3}$/.test(val)) {
+          serialLikes++;
+        }
+      }
+
+      if (sampleRows > 0) {
+        if (nameLikes / sampleRows > 0.4) bestNameCol = c;
+        if (matricLikes / sampleRows > 0.4) bestMatricCol = c;
+        if (serialLikes / sampleRows > 0.6) bestSNCol = c;
+      }
+    }
+
+    nameColIndex = bestNameCol;
+    matricColIndex = bestMatricCol;
+
+    if (nameColIndex === -1 && colCount > 1) {
+      if (bestSNCol === 0) {
+        nameColIndex = 1;
+        if (colCount > 2) matricColIndex = 2;
+      } else {
+        nameColIndex = 0;
+        if (colCount > 1) matricColIndex = 1;
+      }
+    }
+  }
+
+  // 4. Extract students from data rows
+  const students: Student[] = [];
+  const startRow = headerRowIndex !== -1 ? headerRowIndex + 1 : 0;
+
+  for (let r = startRow; r < grid.length; r++) {
+    const row = grid[r];
+    if (!Array.isArray(row) || row.length === 0) continue;
+
+    const nameCell = nameColIndex !== -1 && nameColIndex < row.length ? row[nameColIndex] : null;
+    const matricCell = matricColIndex !== -1 && matricColIndex < row.length ? row[matricColIndex] : null;
+    const deptCell = deptColIndex !== -1 && deptColIndex < row.length ? row[deptColIndex] : null;
+    const levelCell = levelColIndex !== -1 && levelColIndex < row.length ? row[levelColIndex] : null;
+
+    if (!nameCell) continue;
+
+    const nameStr = String(nameCell).trim();
+    if (!nameStr || nameStr.toLowerCase() === 'name' || nameStr.toLowerCase() === 'student' || nameStr.toLowerCase().includes('total')) continue;
+
+    let matricStr = matricCell ? String(matricCell).trim() : '';
+    if (!matricStr || matricStr.toLowerCase() === 'matric' || matricStr.toLowerCase() === 'id' || matricStr.toLowerCase() === 'matric no' || matricStr.toLowerCase() === 'matric number') {
+      matricStr = `IMP-${Math.random().toString(36).substring(2, 8).toUpperCase()}`;
+    }
+
+    const deptStr = deptCell ? String(deptCell).trim() : 'General';
+    let levelStr = levelCell ? String(levelCell).trim() : '100L';
+    if (levelStr && !levelStr.endsWith('L') && !isNaN(Number(levelStr))) {
+      levelStr = `${levelStr}L`;
+    }
+
+    students.push({
+      id: crypto.randomUUID(),
+      matric_number: matricStr,
+      full_name: nameStr,
+      department: deptStr,
+      faculty: 'Science',
+      level: levelStr,
+      email: `${matricStr.toLowerCase()}@faithtrack.edu`,
+      created_at: new Date().toISOString()
+    } as Student);
+  }
+
+  return students;
+};
+
 export default function AdminStudents() {
   const [students, setStudents] = useState<Student[]>([]);
   const [allAttendanceRecords, setAllAttendanceRecords] = useState<AttendanceRecord[]>([]);
@@ -119,87 +281,14 @@ export default function AdminStudents() {
         const wb = XLSX.read(new Uint8Array(dataBuffer), { type: 'array' });
         const wsname = wb.SheetNames[0];
         const ws = wb.Sheets[wsname];
-        const data = XLSX.utils.sheet_to_json(ws);
         
-        const studentsToImport: Student[] = [];
+        // Read as 2D array of rows
+        const grid = XLSX.utils.sheet_to_json(ws, { header: 1 }) as any[][];
         
-        for (const row of (data as any[])) {
-          // Normalize keys to lowercase with all non-alphanumeric characters removed
-          const normalizedRow: Record<string, string> = {};
-          Object.keys(row).forEach(key => {
-            normalizedRow[key.toLowerCase().replace(/[^a-z0-9]/g, '')] = String(row[key]);
-          });
-
-          // 1. Flexible name matching (fullname, studentname, name, names, first + last name, etc.)
-          let name = '';
-          const first = normalizedRow['firstname'] || normalizedRow['first'] || normalizedRow['fname'];
-          const last = normalizedRow['lastname'] || normalizedRow['last'] || normalizedRow['lname'] || normalizedRow['surname'] || normalizedRow['othernames'];
-          
-          if (first && last) {
-            name = `${first} ${last}`.trim();
-          } else {
-            name = normalizedRow['fullname'] || 
-                   normalizedRow['studentname'] || 
-                   normalizedRow['name'] || 
-                   normalizedRow['names'] || 
-                   normalizedRow['studentnames'] || 
-                   normalizedRow['fullnames'];
-            
-            if (!name) {
-              const nameKey = Object.keys(normalizedRow).find(k => k.includes('name'));
-              if (nameKey) {
-                name = normalizedRow[nameKey];
-              }
-            }
-          }
-
-          // 2. Flexible matric matching
-          let matric = normalizedRow['matricnumber'] || 
-                       normalizedRow['matricno'] || 
-                       normalizedRow['matric'] || 
-                       normalizedRow['matriccode'] || 
-                       normalizedRow['studentnumber'] || 
-                       normalizedRow['studentid'] || 
-                       normalizedRow['id'];
-          
-          if (!matric) {
-            const matricKey = Object.keys(normalizedRow).find(k => k.includes('matric') || k.includes('id') || k.includes('number'));
-            if (matricKey) {
-              matric = normalizedRow[matricKey];
-            }
-          }
-          
-          if (!matric) {
-            matric = `IMP-${Math.random().toString(36).substring(2, 8).toUpperCase()}`;
-          }
-
-          // 3. Flexible metadata parsing
-          const dept = normalizedRow['department'] || normalizedRow['dept'] || normalizedRow['course'] || 'General';
-          const fac = normalizedRow['faculty'] || normalizedRow['fac'] || 'Science';
-          
-          let lvl = normalizedRow['level'] || normalizedRow['lvl'] || '100L';
-          if (lvl && !lvl.endsWith('L') && !isNaN(Number(lvl))) {
-            lvl = `${lvl}L`;
-          }
-
-          const mail = normalizedRow['email'] || normalizedRow['mail'] || normalizedRow['emailaddress'] || `${matric.toLowerCase()}@faithtrack.edu`;
-
-          if (name) {
-            studentsToImport.push({
-              id: crypto.randomUUID(),
-              matric_number: matric,
-              full_name: name,
-              department: dept,
-              faculty: fac,
-              level: lvl,
-              email: mail,
-              created_at: new Date().toISOString()
-            } as Student);
-          }
-        }
+        // Parse the grid flexibly using our helper
+        const studentsToImport = parseExcelGrid(grid);
         
         if (studentsToImport.length > 0) {
-          // Perform bulk save in a single request!
           await db.saveStudentsBulk(studentsToImport);
           await fetchData();
           alert(`Successfully imported ${studentsToImport.length} students!`);
@@ -218,11 +307,9 @@ export default function AdminStudents() {
     reader.readAsArrayBuffer(file);
   };
 
-  // Manage Attendance Record Add
   const handleAddNewRecord = async () => {
     if (!selectedStudentForAttendance) return;
     try {
-      // Use local check-in time matching selected date
       const customTime = `${newRecordDate}T07:15:00.000Z`;
 
       await db.saveAttendance({
@@ -234,7 +321,6 @@ export default function AdminStudents() {
         attendance_date: newRecordDate,
         status: newRecordStatus,
         type: 'Devotion',
-        // Pass custom check_in_time to backend
         ...({ check_in_time: customTime } as any)
       });
 
@@ -246,7 +332,6 @@ export default function AdminStudents() {
     }
   };
 
-  // Manage Attendance Record Delete
   const handleDeleteRecord = async (recordId: string) => {
     if (!window.confirm("Are you sure you want to remove this check-in?")) return;
     try {
