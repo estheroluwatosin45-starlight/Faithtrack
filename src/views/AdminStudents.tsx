@@ -15,6 +15,7 @@ const parseExcelGrid = (grid: any[][]): Student[] => {
   let nameColIndex = -1;
   let matricColIndex = -1;
   let deptColIndex = -1;
+  let facultyColIndex = -1;
   let levelColIndex = -1;
 
   // 1. Search for a header row in the first 15 rows of the grid
@@ -64,6 +65,9 @@ const parseExcelGrid = (grid: any[][]): Student[] => {
       }
       else if (val.includes('dept') || val.includes('department') || val.includes('course') || val.includes('programme')) {
         deptColIndex = cIndex;
+      }
+      else if (val.includes('faculty') || val === 'fac' || val === 'school') {
+        facultyColIndex = cIndex;
       }
       else if (val.includes('level') || val.includes('lvl') || val === 'year') {
         levelColIndex = cIndex;
@@ -136,6 +140,7 @@ const parseExcelGrid = (grid: any[][]): Student[] => {
     const nameCell = nameColIndex !== -1 && nameColIndex < row.length ? row[nameColIndex] : null;
     const matricCell = matricColIndex !== -1 && matricColIndex < row.length ? row[matricColIndex] : null;
     const deptCell = deptColIndex !== -1 && deptColIndex < row.length ? row[deptColIndex] : null;
+    const facultyCell = facultyColIndex !== -1 && facultyColIndex < row.length ? row[facultyColIndex] : null;
     const levelCell = levelColIndex !== -1 && levelColIndex < row.length ? row[levelColIndex] : null;
 
     if (!nameCell) continue;
@@ -149,7 +154,9 @@ const parseExcelGrid = (grid: any[][]): Student[] => {
     }
 
     const deptStr = deptCell ? String(deptCell).trim() : 'General';
-    let levelStr = levelCell ? String(levelCell).trim() : '100L';
+    const facStr = facultyCell ? String(facultyCell).trim() : 'Nursing';
+    
+    let levelStr = levelCell ? String(levelCell).trim() : '200L';
     if (levelStr && !levelStr.endsWith('L') && !isNaN(Number(levelStr))) {
       levelStr = `${levelStr}L`;
     }
@@ -159,7 +166,7 @@ const parseExcelGrid = (grid: any[][]): Student[] => {
       matric_number: matricStr,
       full_name: nameStr,
       department: deptStr,
-      faculty: 'Science',
+      faculty: facStr,
       level: levelStr,
       email: `${matricStr.toLowerCase()}@faithtrack.edu`,
       created_at: new Date().toISOString()
@@ -187,8 +194,8 @@ export default function AdminStudents() {
     matric_number: '',
     full_name: '',
     department: '',
-    faculty: '',
-    level: '100L',
+    faculty: 'Nursing',
+    level: '200L',
     email: '',
   });
 
@@ -222,8 +229,8 @@ export default function AdminStudents() {
       matric_number: student.matric_number,
       full_name: student.full_name,
       department: student.department || '',
-      faculty: student.faculty || '',
-      level: student.level || '100L',
+      faculty: student.faculty || 'Nursing',
+      level: student.level || '200L',
       email: student.email || '',
     });
     setEditingId(student.id);
@@ -252,7 +259,7 @@ export default function AdminStudents() {
       await fetchData();
       setShowAddForm(false);
       setEditingId(null);
-      setFormData({ matric_number: '', full_name: '', department: '', faculty: '', level: '100L', email: '' });
+      setFormData({ matric_number: '', full_name: '', department: '', faculty: 'Nursing', level: '200L', email: '' });
     } catch (err) {
       console.error(err);
       alert("Failed to save student. Please verify that the matric number is unique and not already registered to another student.");
