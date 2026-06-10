@@ -143,7 +143,7 @@ export async function GET() {
 export async function POST(req: Request) {
   try {
     const body = await req.json();
-    const { student_id, student_name, matric_number, department, level, attendance_date, status, type } = body;
+    const { student_id, student_name, matric_number, department, level, attendance_date, status, type, check_in_time } = body;
 
     const newRecord = {
       student_id,
@@ -154,7 +154,7 @@ export async function POST(req: Request) {
       attendance_date,
       status,
       type,
-      check_in_time: new Date().toISOString(),
+      check_in_time: check_in_time || new Date().toISOString(),
     };
 
     const { data, error } = await supabase

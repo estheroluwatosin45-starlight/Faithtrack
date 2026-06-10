@@ -19,6 +19,18 @@ export const db = {
     return res.json();
   },
 
+  saveStudentsBulk: async (students: Student[]): Promise<Student[]> => {
+    const res = await fetch('/api/students', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(students),
+    });
+    if (!res.ok) throw new Error('Failed to save students in bulk');
+    return res.json();
+  },
+
   getStudentByMatric: async (matric: string): Promise<Student | undefined> => {
     const search = matric.toLowerCase();
     const students = await db.getStudents();

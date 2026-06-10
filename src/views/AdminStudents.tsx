@@ -5,15 +5,22 @@ import { Student, AttendanceRecord } from '../types';
 import { Card, CardContent, CardHeader, CardTitle } from '../components/ui/Card';
 import { Button } from '../components/ui/Button';
 import { Input } from '../components/ui/Input';
+import { formatLagos, getLagosTodayStr } from '../lib/dateUtils';
 
 export default function AdminStudents() {
   const [students, setStudents] = useState<Student[]>([]);
-  const [attendance, setAttendance] = useState<AttendanceRecord[]>([]);
+  const [allAttendanceRecords, setAllAttendanceRecords] = useState<AttendanceRecord[]>([]);
   const [showAddForm, setShowAddForm] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [confirmingDeleteId, setConfirmingDeleteId] = useState<string | null>(null);
   const [search, setSearch] = useState('');
   const fileInputRef = useRef<HTMLInputElement>(null);
+  
+  // Correction Modal State
+  const [selectedStudentForAttendance, setSelectedStudentForAttendance] = useState<Student | null>(null);
+  const [newRecordDate, setNewRecordDate] = useState(getLagosTodayStr());
+  const [newRecordStatus, setNewRecordStatus] = useState<'Present' | 'Late' | 'Absent' | 'Early'>('Present');
+
   const [formData, setFormData] = useState({
     matric_number: '',
     full_name: '',
@@ -23,22 +30,30 @@ export default function AdminStudents() {
     email: '',
   });
 
+  const fetchData = async () => {
+    try {
+      const [studentsList, attendanceList] = await Promise.all([
+        db.getStudents(),
+        db.getAttendance()
+      ]);
+      setStudents(studentsList);
+      setAllAttendanceRecords(attendanceList);
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
   useEffect(() => {
-    Promise.all([db.getStudents(), db.getAttendance()])
-      .then(([studentsList, attendanceList]) => {
-        setStudents(studentsList);
-        setAttendance(attendanceList.filter(a => a.type === 'Devotion'));
-      })
-      .catch(err => console.error(err));
+    fetchData();
   }, []);
 
   const devotionCounts = useMemo(() => {
     const counts: Record<string, number> = {};
-    attendance.forEach(record => {
+    allAttendanceRecords.filter(a => a.type === 'Devotion').forEach(record => {
       counts[record.student_id] = (counts[record.student_id] || 0) + 1;
     });
     return counts;
-  }, [attendance]);
+  }, [allAttendanceRecords]);
 
   const handleEdit = (student: Student) => {
     setFormData({
@@ -56,33 +71,41 @@ export default function AdminStudents() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (editingId) {
-      const studentToUpdate = students.find(s => s.id === editingId);
-      if (studentToUpdate) {
+    try {
+      if (editingId) {
+        const studentToUpdate = students.find(s => s.id === editingId);
+        if (studentToUpdate) {
+          await db.saveStudent({
+            ...studentToUpdate,
+            ...formData
+          });
+        }
+      } else {
         await db.saveStudent({
-          ...studentToUpdate,
-          ...formData
-        });
+          ...formData,
+          id: crypto.randomUUID(),
+          created_at: new Date().toISOString()
+        } as Student);
       }
-    } else {
-      await db.saveStudent({
-        ...formData,
-        id: crypto.randomUUID(),
-        created_at: new Date().toISOString()
-      } as Student);
+      await fetchData();
+      setShowAddForm(false);
+      setEditingId(null);
+      setFormData({ matric_number: '', full_name: '', department: '', faculty: '', level: '100L', email: '' });
+    } catch (err) {
+      console.error(err);
+      alert("Failed to save student.");
     }
-    const updatedStudents = await db.getStudents();
-    setStudents(updatedStudents);
-    setShowAddForm(false);
-    setEditingId(null);
-    setFormData({ matric_number: '', full_name: '', department: '', faculty: '', level: '100L', email: '' });
   };
 
   const handleDelete = async (id: string) => {
-    await db.deleteStudent(id);
-    const updatedStudents = await db.getStudents();
-    setStudents(updatedStudents);
-    setConfirmingDeleteId(null);
+    try {
+      await db.deleteStudent(id);
+      await fetchData();
+      setConfirmingDeleteId(null);
+    } catch (err) {
+      console.error(err);
+      alert("Failed to delete student.");
+    }
   };
 
   const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -92,60 +115,160 @@ export default function AdminStudents() {
     const reader = new FileReader();
     reader.onload = async (evt) => {
       try {
-        const bstr = evt.target?.result;
-        const wb = XLSX.read(bstr, { type: 'binary' });
+        const dataBuffer = evt.target?.result as ArrayBuffer;
+        const wb = XLSX.read(new Uint8Array(dataBuffer), { type: 'array' });
         const wsname = wb.SheetNames[0];
         const ws = wb.Sheets[wsname];
         const data = XLSX.utils.sheet_to_json(ws);
         
-        let count = 0;
-        const promises: Promise<any>[] = [];
+        const studentsToImport: Student[] = [];
+        
         for (const row of (data as any[])) {
-          // Normalize keys to lowercase for flexible matching
+          // Normalize keys to lowercase with all non-alphanumeric characters removed
           const normalizedRow: Record<string, string> = {};
           Object.keys(row).forEach(key => {
             normalizedRow[key.toLowerCase().replace(/[^a-z0-9]/g, '')] = String(row[key]);
           });
 
-          const matric = normalizedRow['matricnumber'] || normalizedRow['matricno'] || normalizedRow['matric'] || `IMP-${Math.random().toString(36).substring(2, 8).toUpperCase()}`;
-          const name = normalizedRow['fullname'] || normalizedRow['name'] || normalizedRow['studentname'];
+          // 1. Flexible name matching (fullname, studentname, name, names, first + last name, etc.)
+          let name = '';
+          const first = normalizedRow['firstname'] || normalizedRow['first'] || normalizedRow['fname'];
+          const last = normalizedRow['lastname'] || normalizedRow['last'] || normalizedRow['lname'] || normalizedRow['surname'] || normalizedRow['othernames'];
           
+          if (first && last) {
+            name = `${first} ${last}`.trim();
+          } else {
+            name = normalizedRow['fullname'] || 
+                   normalizedRow['studentname'] || 
+                   normalizedRow['name'] || 
+                   normalizedRow['names'] || 
+                   normalizedRow['studentnames'] || 
+                   normalizedRow['fullnames'];
+            
+            if (!name) {
+              const nameKey = Object.keys(normalizedRow).find(k => k.includes('name'));
+              if (nameKey) {
+                name = normalizedRow[nameKey];
+              }
+            }
+          }
+
+          // 2. Flexible matric matching
+          let matric = normalizedRow['matricnumber'] || 
+                       normalizedRow['matricno'] || 
+                       normalizedRow['matric'] || 
+                       normalizedRow['matriccode'] || 
+                       normalizedRow['studentnumber'] || 
+                       normalizedRow['studentid'] || 
+                       normalizedRow['id'];
+          
+          if (!matric) {
+            const matricKey = Object.keys(normalizedRow).find(k => k.includes('matric') || k.includes('id') || k.includes('number'));
+            if (matricKey) {
+              matric = normalizedRow[matricKey];
+            }
+          }
+          
+          if (!matric) {
+            matric = `IMP-${Math.random().toString(36).substring(2, 8).toUpperCase()}`;
+          }
+
+          // 3. Flexible metadata parsing
+          const dept = normalizedRow['department'] || normalizedRow['dept'] || normalizedRow['course'] || 'General';
+          const fac = normalizedRow['faculty'] || normalizedRow['fac'] || 'Science';
+          
+          let lvl = normalizedRow['level'] || normalizedRow['lvl'] || '100L';
+          if (lvl && !lvl.endsWith('L') && !isNaN(Number(lvl))) {
+            lvl = `${lvl}L`;
+          }
+
+          const mail = normalizedRow['email'] || normalizedRow['mail'] || normalizedRow['emailaddress'] || `${matric.toLowerCase()}@faithtrack.edu`;
+
           if (name) {
-            promises.push(db.saveStudent({
+            studentsToImport.push({
               id: crypto.randomUUID(),
               matric_number: matric,
               full_name: name,
-              department: normalizedRow['department'] || normalizedRow['dept'] || '',
-              faculty: normalizedRow['faculty'] || '',
-              level: normalizedRow['level'] || '100L',
-              email: normalizedRow['email'] || '',
+              department: dept,
+              faculty: fac,
+              level: lvl,
+              email: mail,
               created_at: new Date().toISOString()
-            } as Student));
-            count++;
+            } as Student);
           }
         }
         
-        await Promise.all(promises);
-        const updatedStudents = await db.getStudents();
-        setStudents(updatedStudents);
-        alert(`Successfully imported ${count} students!`);
+        if (studentsToImport.length > 0) {
+          // Perform bulk save in a single request!
+          await db.saveStudentsBulk(studentsToImport);
+          await fetchData();
+          alert(`Successfully imported ${studentsToImport.length} students!`);
+        } else {
+          alert("Could not identify any students in the Excel sheet. Please make sure there is a 'Name' or 'Full Name' column.");
+        }
       } catch (err) {
         console.error("Error parsing Excel file", err);
         alert("Failed to parse the Excel file. Please ensure it's a valid format.");
       }
       
-      // Reset input
       if (fileInputRef.current) {
         fileInputRef.current.value = '';
       }
     };
-    reader.readAsBinaryString(file);
+    reader.readAsArrayBuffer(file);
   };
+
+  // Manage Attendance Record Add
+  const handleAddNewRecord = async () => {
+    if (!selectedStudentForAttendance) return;
+    try {
+      // Use local check-in time matching selected date
+      const customTime = `${newRecordDate}T07:15:00.000Z`;
+
+      await db.saveAttendance({
+        student_id: selectedStudentForAttendance.id,
+        student_name: selectedStudentForAttendance.full_name,
+        matric_number: selectedStudentForAttendance.matric_number,
+        department: selectedStudentForAttendance.department,
+        level: selectedStudentForAttendance.level,
+        attendance_date: newRecordDate,
+        status: newRecordStatus,
+        type: 'Devotion',
+        // Pass custom check_in_time to backend
+        ...({ check_in_time: customTime } as any)
+      });
+
+      await fetchData();
+      alert(`Added devotion attendance for ${selectedStudentForAttendance.full_name} on ${newRecordDate}.`);
+    } catch (err) {
+      console.error(err);
+      alert("Failed to add attendance record.");
+    }
+  };
+
+  // Manage Attendance Record Delete
+  const handleDeleteRecord = async (recordId: string) => {
+    if (!window.confirm("Are you sure you want to remove this check-in?")) return;
+    try {
+      await db.deleteAttendanceRecord(recordId);
+      await fetchData();
+    } catch (err) {
+      console.error(err);
+      alert("Failed to delete record.");
+    }
+  };
+
+  const selectedStudentRecords = useMemo(() => {
+    if (!selectedStudentForAttendance) return [];
+    return allAttendanceRecords
+      .filter(r => r.student_id === selectedStudentForAttendance.id && r.type === 'Devotion')
+      .sort((a, b) => new Date(b.check_in_time).getTime() - new Date(a.check_in_time).getTime());
+  }, [selectedStudentForAttendance, allAttendanceRecords]);
 
   return (
     <div className="space-y-6">
-      <div className="flex justify-between items-center bg-white p-4 rounded-lg border border-slate-200">
-        <h2 className="text-xl font-bold tracking-tight">Student Directory</h2>
+      <div className="flex justify-between items-center bg-white p-4 rounded-lg border border-slate-200 shadow-sm">
+        <h2 className="text-xl font-bold tracking-tight text-slate-900">Student Directory</h2>
         <div className="flex gap-2">
           <input
             type="file"
@@ -167,9 +290,9 @@ export default function AdminStudents() {
       </div>
 
       {showAddForm && (
-        <Card>
+        <Card className="border-slate-200">
           <CardHeader>
-            <CardTitle>{editingId ? 'Edit Student' : 'Register Student'}</CardTitle>
+            <CardTitle className="text-slate-800">{editingId ? 'Edit Student Details' : 'Register New Student'}</CardTitle>
           </CardHeader>
           <CardContent>
             <form onSubmit={handleSubmit} className="grid md:grid-cols-2 gap-4">
@@ -179,9 +302,9 @@ export default function AdminStudents() {
               <Input label="Department" required value={formData.department} onChange={e => setFormData({...formData, department: e.target.value})} />
               <Input label="Faculty" required value={formData.faculty} onChange={e => setFormData({...formData, faculty: e.target.value})} />
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Level</label>
+                <label className="block text-sm font-medium text-slate-700 mb-1">Level</label>
                 <select 
-                  className="flex h-10 w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="flex h-10 w-full rounded-md border border-slate-300 bg-white px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 text-slate-900"
                   value={formData.level}
                   onChange={e => setFormData({...formData, level: e.target.value})}
                 >
@@ -202,7 +325,7 @@ export default function AdminStudents() {
         </Card>
       )}
 
-      <Card>
+      <Card className="border-slate-200">
         <CardHeader className="pb-4">
           <Input 
             placeholder="Search by Name, Matric, or Department..." 
@@ -238,7 +361,16 @@ export default function AdminStudents() {
                     <td className="px-6 py-4">{student.department}</td>
                     <td className="px-6 py-4">{student.level}</td>
                     <td className="px-6 py-4 text-slate-500">{student.email}</td>
-                    <td className="px-6 py-4 text-center font-semibold text-blue-600">{devotionCounts[student.id] || 0}</td>
+                    <td className="px-6 py-4 text-center">
+                      <button 
+                        type="button" 
+                        onClick={() => setSelectedStudentForAttendance(student)}
+                        className="font-bold text-blue-600 hover:text-blue-800 hover:underline cursor-pointer bg-transparent border-none"
+                        title="Click to correct attendance records"
+                      >
+                        {devotionCounts[student.id] || 0}
+                      </button>
+                    </td>
                     <td className="px-6 py-4 text-right">
                       <div className="flex justify-end gap-2">
                         {confirmingDeleteId === student.id ? (
@@ -277,6 +409,128 @@ export default function AdminStudents() {
           </div>
         </CardContent>
       </Card>
+
+      {/* Manage Attendance Modal */}
+      {selectedStudentForAttendance && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/50 backdrop-blur-xs">
+          <div className="bg-white rounded-2xl border border-slate-200 shadow-xl max-w-2xl w-full max-h-[85vh] flex flex-col overflow-hidden">
+            {/* Modal Header */}
+            <div className="p-6 border-b border-slate-100 flex justify-between items-center bg-slate-50/50">
+              <div>
+                <h3 className="text-lg font-bold text-slate-800">Correct Attendance Records</h3>
+                <p className="text-xs text-slate-500 mt-1">
+                  Manage devotion attendance history for <span className="font-semibold text-slate-700">{selectedStudentForAttendance.full_name}</span> ({selectedStudentForAttendance.matric_number})
+                </p>
+              </div>
+              <button 
+                type="button" 
+                onClick={() => setSelectedStudentForAttendance(null)}
+                className="text-slate-400 hover:text-slate-600 p-1.5 rounded-lg hover:bg-slate-100 transition-colors cursor-pointer"
+              >
+                <span className="sr-only">Close</span>
+                <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+            </div>
+
+            {/* Modal Content */}
+            <div className="p-6 overflow-y-auto flex-1 space-y-6">
+              {/* Add Manual Record Form */}
+              <div className="bg-slate-50 border border-slate-100 p-4 rounded-xl space-y-3">
+                <h4 className="text-xs font-bold uppercase tracking-wider text-slate-500">Add Attendance Record</h4>
+                <div className="flex flex-col sm:flex-row gap-3 items-end">
+                  <div className="flex-1 w-full space-y-1">
+                    <label className="block text-[11px] font-medium text-slate-600">Select Date</label>
+                    <input 
+                      type="date"
+                      className="flex h-9 w-full rounded-md border border-slate-200 bg-white px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 text-slate-900"
+                      value={newRecordDate}
+                      onChange={e => setNewRecordDate(e.target.value)}
+                    />
+                  </div>
+                  <div className="flex-1 w-full space-y-1">
+                    <label className="block text-[11px] font-medium text-slate-600">Status</label>
+                    <select 
+                      className="flex h-9 w-full rounded-md border border-slate-200 bg-white px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 text-slate-900"
+                      value={newRecordStatus}
+                      onChange={e => setNewRecordStatus(e.target.value as any)}
+                    >
+                      <option value="Present">Present</option>
+                      <option value="Early">Early</option>
+                      <option value="Late">Late</option>
+                      <option value="Absent">Absent</option>
+                    </select>
+                  </div>
+                  <Button 
+                    onClick={handleAddNewRecord} 
+                    className="h-9 w-full sm:w-auto px-4 text-xs shrink-0"
+                  >
+                    Add Record
+                  </Button>
+                </div>
+              </div>
+
+              {/* Attendance Log List */}
+              <div className="space-y-3">
+                <h4 className="text-xs font-bold uppercase tracking-wider text-slate-500">Attendance Log</h4>
+                <div className="border border-slate-200 rounded-xl overflow-hidden bg-white max-h-[35vh] overflow-y-auto">
+                  <table className="w-full text-xs text-left">
+                    <thead className="bg-slate-50 text-slate-500 border-b border-slate-200 sticky top-0">
+                      <tr>
+                        <th className="px-4 py-2.5 font-medium">Date</th>
+                        <th className="px-4 py-2.5 font-medium">Status</th>
+                        <th className="px-4 py-2.5 font-medium text-right">Action</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-slate-100">
+                      {selectedStudentRecords.map(record => (
+                        <tr key={record.id} className="hover:bg-slate-50/50">
+                          <td className="px-4 py-3 text-slate-700 font-medium">
+                            {formatLagos(new Date(record.check_in_time), 'EEEE, MMMM d, yyyy')}
+                          </td>
+                          <td className="px-4 py-3">
+                            <span className={`inline-flex items-center rounded-md px-2 py-0.5 text-[10px] font-medium ring-1 ring-inset ${
+                              record.status === 'Present' ? 'bg-emerald-50 text-emerald-700 ring-emerald-600/20' : 
+                              record.status === 'Early' ? 'bg-teal-50 text-teal-700 ring-teal-600/20' : 
+                              record.status === 'Late' ? 'bg-amber-50 text-amber-800 ring-amber-600/20' :
+                              'bg-rose-50 text-rose-800 ring-rose-600/20'
+                            }`}>
+                              {record.status}
+                            </span>
+                          </td>
+                          <td className="px-4 py-3 text-right">
+                            <Button 
+                              variant="outline" 
+                              size="sm" 
+                              onClick={() => handleDeleteRecord(record.id)}
+                              className="text-rose-600 hover:text-rose-700 hover:bg-rose-50 border-rose-100 px-2 py-1 h-7 text-[10px]"
+                            >
+                              Remove
+                            </Button>
+                          </td>
+                        </tr>
+                      ))}
+                      {selectedStudentRecords.length === 0 && (
+                        <tr>
+                          <td colSpan={3} className="px-4 py-6 text-center text-slate-500 font-medium">
+                            No devotion check-ins recorded for this student.
+                          </td>
+                        </tr>
+                      )}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+
+            {/* Modal Footer */}
+            <div className="p-4 border-t border-slate-100 flex justify-end bg-slate-50/30">
+              <Button onClick={() => setSelectedStudentForAttendance(null)}>Done</Button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

@@ -44,6 +44,33 @@ export async function GET() {
 export async function POST(req: Request) {
   try {
     const body = await req.json();
+
+    if (Array.isArray(body)) {
+      const formatted = body.map(s => {
+        const studentData: any = {
+          matric_number: s.matric_number,
+          full_name: s.full_name,
+          department: s.department || 'General',
+          faculty: s.faculty || 'Science',
+          level: s.level || '100L',
+          email: s.email || '',
+          phone: s.phone || null
+        };
+        if (s.id && !s.id.startsWith('student-initial-')) {
+          studentData.id = s.id;
+        }
+        return studentData;
+      });
+
+      const { data, error } = await supabase
+        .from('students')
+        .upsert(formatted, { onConflict: 'matric_number' })
+        .select();
+
+      if (error) throw error;
+      return NextResponse.json(data);
+    }
+
     const { id, matric_number, full_name, department, faculty, level, email, phone } = body;
 
     const studentData: any = {
