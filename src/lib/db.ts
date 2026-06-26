@@ -120,7 +120,19 @@ export const db = {
         body: JSON.stringify(student),
       });
       if (!res.ok) throw new Error('Failed to save student');
-      return res.json();
+      const saved = await res.json();
+      
+      const cached = db.getCachedStudents();
+      const idx = cached.findIndex(s => s.matric_number === saved.matric_number);
+      if (idx !== -1) {
+        cached[idx] = saved;
+      } else {
+        cached.push(saved);
+      }
+      db.setCachedStudents(cached);
+      db.triggerStorageChange();
+      
+      return saved;
     } catch (err) {
       console.warn('Network request failed, queueing student offline:', err);
       return db.queueOfflineStudent(student);
@@ -140,7 +152,21 @@ export const db = {
         body: JSON.stringify(students),
       });
       if (!res.ok) throw new Error('Failed to save students in bulk');
-      return res.json();
+      const saved = await res.json();
+      
+      const cached = db.getCachedStudents();
+      saved.forEach((s: Student) => {
+        const idx = cached.findIndex(c => c.matric_number === s.matric_number);
+        if (idx !== -1) {
+          cached[idx] = s;
+        } else {
+          cached.push(s);
+        }
+      });
+      db.setCachedStudents(cached);
+      db.triggerStorageChange();
+      
+      return saved;
     } catch (err) {
       console.warn('Network request failed, queueing students bulk offline:', err);
       return db.queueOfflineStudentsBulk(students);
@@ -175,6 +201,10 @@ export const db = {
       method: 'DELETE',
     });
     if (!res.ok) throw new Error('Failed to delete student');
+    
+    const cached = db.getCachedStudents();
+    db.setCachedStudents(cached.filter(s => s.id !== id));
+    db.triggerStorageChange();
   },
 
   getAttendance: async (): Promise<AttendanceRecord[]> => {
@@ -219,6 +249,14 @@ export const db = {
       body: JSON.stringify({ id, ...updates }),
     });
     if (!res.ok) throw new Error('Failed to update attendance');
+    
+    const cached = db.getCachedAttendance();
+    const idx = cached.findIndex(r => r.id === id);
+    if (idx !== -1) {
+      cached[idx] = { ...cached[idx], ...updates } as any;
+      db.setCachedAttendance(cached);
+      db.triggerStorageChange();
+    }
   },
 
   deleteAttendanceRecord: async (id: string): Promise<void> => {
@@ -237,6 +275,10 @@ export const db = {
       method: 'DELETE',
     });
     if (!res.ok) throw new Error('Failed to delete attendance record');
+    
+    const cached = db.getCachedAttendance();
+    db.setCachedAttendance(cached.filter(r => r.id !== id));
+    db.triggerStorageChange();
   },
 
   saveAttendance: async (record: Omit<AttendanceRecord, 'id' | 'check_in_time'>): Promise<AttendanceRecord> => {
@@ -252,7 +294,13 @@ export const db = {
         body: JSON.stringify(record),
       });
       if (!res.ok) throw new Error('Failed to save attendance record');
-      return res.json();
+      const saved = await res.json();
+      
+      const cached = db.getCachedAttendance();
+      db.setCachedAttendance([saved, ...cached]);
+      db.triggerStorageChange();
+      
+      return saved;
     } catch (err) {
       console.warn('Network request failed, queueing attendance offline:', err);
       return db.queueOfflineAttendance(record);
