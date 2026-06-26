@@ -47,12 +47,24 @@ export async function POST(req: Request) {
 
     if (Array.isArray(body)) {
       const formatted = body.map(s => {
+        const matricUpper = (s.matric_number || '').toUpperCase();
+        let dept = s.department || 'General';
+        let fac = s.faculty || 'Nursing';
+        
+        if (matricUpper.includes('NUR')) {
+          dept = 'Nursing';
+          fac = 'Nursing';
+        } else if (matricUpper.includes('PHT')) {
+          dept = 'Physiotherapy';
+          fac = 'Nursing';
+        }
+
         const studentData: any = {
           matric_number: s.matric_number,
           full_name: s.full_name,
-          department: s.department || 'General',
-          faculty: s.faculty || 'Science',
-          level: s.level || '100L',
+          department: dept,
+          faculty: fac,
+          level: s.level || '200L',
           email: s.email || '',
           phone: s.phone || null
         };
@@ -73,12 +85,24 @@ export async function POST(req: Request) {
 
     const { id, matric_number, full_name, department, faculty, level, email, phone } = body;
 
+    const matricUpper = (matric_number || '').toUpperCase();
+    let dept = department || 'General';
+    let fac = faculty || 'Nursing';
+    
+    if (matricUpper.includes('NUR')) {
+      dept = 'Nursing';
+      fac = 'Nursing';
+    } else if (matricUpper.includes('PHT')) {
+      dept = 'Physiotherapy';
+      fac = 'Nursing';
+    }
+
     const studentData: any = {
       matric_number,
       full_name,
-      department: department || 'General',
-      faculty: faculty || 'Science',
-      level: level || '100L',
+      department: dept,
+      faculty: fac,
+      level: level || '200L',
       email,
       phone
     };

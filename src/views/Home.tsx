@@ -19,23 +19,18 @@ export default function Home() {
     }).catch(err => console.error(err));
   }, []);
 
-  const filtered = records.filter(r => {
-    const todayStr = getLagosTodayStr();
-    const term = searchTerm.toLowerCase();
-    const dateStrFormatted = formatLagos(new Date(r.check_in_time), 'MMMM d yyyy').toLowerCase();
-    const dateStrISO = r.attendance_date.toLowerCase();
-    
-    // If there is no search term, only show today's records
-    if (!searchTerm) {
-      return r.attendance_date === todayStr;
-    }
-    
-    // Otherwise show records that match the search term in name, department, or date
-    return r.student_name.toLowerCase().includes(term) || 
-           r.department.toLowerCase().includes(term) ||
-           dateStrFormatted.includes(term) ||
-           dateStrISO.includes(term);
-  });
+  const filtered = searchTerm
+    ? records.filter(r => {
+        const term = searchTerm.toLowerCase();
+        const dateStrFormatted = formatLagos(new Date(r.check_in_time), 'MMMM d yyyy').toLowerCase();
+        const dateStrISO = r.attendance_date.toLowerCase();
+        return r.student_name.toLowerCase().includes(term) || 
+               (r.matric_number || '').toLowerCase().includes(term) ||
+               r.department.toLowerCase().includes(term) ||
+               dateStrFormatted.includes(term) ||
+               dateStrISO.includes(term);
+      })
+    : records.slice(0, 50); // Show top 50 recent records when not searching
 
   return (
     <div className="bg-white">
@@ -78,7 +73,7 @@ export default function Home() {
           <div className="mx-auto max-w-2xl lg:text-center mb-12">
             <h2 className="text-3xl font-bold tracking-tight text-gray-900">Attendance Directory</h2>
             <p className="mt-4 text-lg text-gray-600">
-              Search your name below to view your recent attendance records.
+              {searchTerm ? 'Search Results' : 'Showing the 50 most recent check-ins. Search your name to find all your records.'}
             </p>
           </div>
           
@@ -90,7 +85,7 @@ export default function Home() {
               <input
                 type="text"
                 className="block w-full rounded-md border-0 py-3 pl-10 pr-3 text-gray-900 ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-blue-600 sm:text-sm sm:leading-6 cursor-text"
-                placeholder="Search by name, department or date (e.g., june 4 2026)..."
+                placeholder="Search by name, matric number, department, or date..."
                 value={searchTerm}
                 onChange={e => setSearchTerm(e.target.value)}
               />
@@ -117,26 +112,29 @@ export default function Home() {
                       <td className="px-6 py-4">{formatLagos(new Date(record.check_in_time), 'MMMM d yyyy')}</td>
                       <td className="px-6 py-4">
                         <div className="font-medium text-slate-900">{record.student_name}</div>
-                        <div className="text-xs text-slate-500">{record.department}</div>
+                        <div className="text-xs text-slate-500">{record.matric_number} &bull; {record.department}</div>
                       </td>
                       <td className="px-6 py-4">
                         <span className={`inline-flex items-center rounded-md px-2 py-1 text-xs font-medium ring-1 ring-inset ${
                           record.type === 'Chapel' ? 'bg-blue-50 text-blue-700 ring-blue-600/20' : 
-                          record.type === 'School' ? 'bg-yellow-50 text-yellow-700 ring-yellow-600/20' :
+                          record.type === 'School' ? 'bg-amber-50 text-amber-700 ring-amber-600/20' :
                           'bg-emerald-50 text-emerald-700 ring-emerald-600/20'
                         }`}>
                           {record.type}
                         </span>
                       </td>
                       <td className="px-6 py-4">
-                        <span className={`inline-flex items-center rounded-md px-2 py-1 text-xs font-medium ring-1 ring-inset ${
-                          record.status === 'Present' ? 'bg-green-50 text-green-700 ring-green-600/20' : 'bg-yellow-50 text-yellow-800 ring-yellow-600/20'
+                        <span className={`inline-flex items-center rounded-md px-2.5 py-0.5 text-xs font-medium ring-1 ring-inset ${
+                          record.status === 'Present' ? 'bg-emerald-50 text-emerald-700 ring-emerald-600/20' : 
+                          record.status === 'Early' ? 'bg-teal-50 text-teal-700 ring-teal-600/20' : 
+                          record.status === 'Late' ? 'bg-amber-50 text-amber-800 ring-amber-600/20' :
+                          'bg-rose-50 text-rose-800 ring-rose-600/20'
                         }`}>
                           {record.status}
                         </span>
                       </td>
                       <td className="px-6 py-4 font-mono text-xs text-slate-500">
-                        {formatLagos(new Date(record.check_in_time), 'HH:mm')}
+                        {formatLagos(new Date(record.check_in_time), 'hh:mm:ss a')}
                       </td>
                     </tr>
                   ))}

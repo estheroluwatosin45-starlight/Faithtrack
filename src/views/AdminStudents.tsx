@@ -153,8 +153,17 @@ const parseExcelGrid = (grid: any[][]): Student[] => {
       matricStr = `IMP-${Math.random().toString(36).substring(2, 8).toUpperCase()}`;
     }
 
-    const deptStr = deptCell ? String(deptCell).trim() : 'General';
-    const facStr = facultyCell ? String(facultyCell).trim() : 'Nursing';
+    const matricUpper = matricStr.toUpperCase();
+    let deptStr = deptCell ? String(deptCell).trim() : 'General';
+    let facStr = facultyCell ? String(facultyCell).trim() : 'Nursing';
+
+    if (matricUpper.includes('NUR')) {
+      deptStr = 'Nursing';
+      facStr = 'Nursing';
+    } else if (matricUpper.includes('PHT')) {
+      deptStr = 'Physiotherapy';
+      facStr = 'Nursing';
+    }
     
     let levelStr = levelCell ? String(levelCell).trim() : '200L';
     if (levelStr && !levelStr.endsWith('L') && !isNaN(Number(levelStr))) {
@@ -173,6 +182,103 @@ const parseExcelGrid = (grid: any[][]): Student[] => {
     } as Student);
   }
 
+  return students;
+};
+
+// Helper to load pdf.js from CDN dynamically
+const loadPdfJs = (): Promise<any> => {
+  return new Promise((resolve, reject) => {
+    if (typeof window === 'undefined') {
+      reject(new Error('PDF parsing can only be run in the browser.'));
+      return;
+    }
+    if ((window as any).pdfjsLib) {
+      resolve((window as any).pdfjsLib);
+      return;
+    }
+    const script = document.createElement('script');
+    script.src = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.4.120/pdf.min.js';
+    script.onload = () => {
+      const pdfjsLib = (window as any).pdfjsLib;
+      pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.4.120/pdf.worker.min.js';
+      resolve(pdfjsLib);
+    };
+    script.onerror = (err) => reject(new Error('Failed to load PDF parsing library: ' + err));
+    document.head.appendChild(script);
+  });
+};
+
+const parsePdfTable = async (arrayBuffer: ArrayBuffer): Promise<Student[]> => {
+  const pdfjsLib = await loadPdfJs();
+  const pdf = await pdfjsLib.getDocument({ data: new Uint8Array(arrayBuffer) }).promise;
+  const students: Student[] = [];
+
+  for (let i = 1; i <= pdf.numPages; i++) {
+    const page = await pdf.getPage(i);
+    const textContent = await page.getTextContent();
+    
+    // Group items by their Y coordinate (vertical position)
+    const rowsMap: { [key: number]: any[] } = {};
+    const yThreshold = 5; // Group items within 5 units of each other vertically
+    
+    textContent.items.forEach((item: any) => {
+      if (!item.str || item.str.trim() === '') return;
+      const y = item.transform[5];
+      
+      const matchedY = Object.keys(rowsMap).find(key => Math.abs(Number(key) - y) < yThreshold);
+      if (matchedY !== undefined) {
+        rowsMap[Number(matchedY)].push(item);
+      } else {
+        rowsMap[y] = [item];
+      }
+    });
+    
+    // Sort rows from top to bottom (Y descending in PDF coordinate space)
+    const sortedYKeys = Object.keys(rowsMap)
+      .map(Number)
+      .sort((a, b) => b - a);
+      
+    const grid: string[][] = sortedYKeys.map(y => {
+      const rowItems = rowsMap[y];
+      rowItems.sort((a, b) => a.transform[4] - b.transform[4]);
+      
+      const mergedCells: string[] = [];
+      if (rowItems.length > 0) {
+        let currentItem = {
+          str: rowItems[0].str,
+          x: rowItems[0].transform[4],
+          width: rowItems[0].width || (rowItems[0].str.length * 6)
+        };
+        
+        for (let j = 1; j < rowItems.length; j++) {
+          const nextItem = rowItems[j];
+          const nextX = nextItem.transform[4];
+          const nextWidth = nextItem.width || (nextItem.str.length * 6);
+          const currentXEnd = currentItem.x + currentItem.width;
+          
+          // If the gap is small (e.g., less than 15 units), merge them
+          if (nextX - currentXEnd < 15) {
+            currentItem.str += " " + nextItem.str;
+            currentItem.width = (nextX + nextWidth) - currentItem.x;
+          } else {
+            mergedCells.push(currentItem.str.trim());
+            currentItem = {
+              str: nextItem.str,
+              x: nextX,
+              width: nextWidth
+            };
+          }
+        }
+        mergedCells.push(currentItem.str.trim());
+      }
+      return mergedCells;
+    });
+    
+    // Parse the grid for this page and append students
+    const pageStudents = parseExcelGrid(grid);
+    students.push(...pageStudents);
+  }
+  
   return students;
 };
 
@@ -223,6 +329,25 @@ export default function AdminStudents() {
     });
     return counts;
   }, [allAttendanceRecords]);
+
+  const handleMatricNumberChange = (val: string) => {
+    const upperVal = val.toUpperCase();
+    let updatedDept = formData.department;
+    let updatedFaculty = formData.faculty;
+    if (upperVal.includes('NUR')) {
+      updatedDept = 'Nursing';
+      updatedFaculty = 'Nursing';
+    } else if (upperVal.includes('PHT')) {
+      updatedDept = 'Physiotherapy';
+      updatedFaculty = 'Nursing';
+    }
+    setFormData({
+      ...formData,
+      matric_number: val,
+      department: updatedDept,
+      faculty: updatedFaculty
+    });
+  };
 
   const handleEdit = (student: Student) => {
     setFormData({
@@ -281,37 +406,63 @@ export default function AdminStudents() {
     const file = e.target.files?.[0];
     if (!file) return;
 
-    const reader = new FileReader();
-    reader.onload = async (evt) => {
-      try {
-        const dataBuffer = evt.target?.result as ArrayBuffer;
-        const wb = XLSX.read(new Uint8Array(dataBuffer), { type: 'array' });
-        const wsname = wb.SheetNames[0];
-        const ws = wb.Sheets[wsname];
-        
-        // Read as 2D array of rows
-        const grid = XLSX.utils.sheet_to_json(ws, { header: 1 }) as any[][];
-        
-        // Parse the grid flexibly using our helper
-        const studentsToImport = parseExcelGrid(grid);
-        
-        if (studentsToImport.length > 0) {
-          await db.saveStudentsBulk(studentsToImport);
-          await fetchData();
-          alert(`Successfully imported ${studentsToImport.length} students!`);
-        } else {
-          alert("Could not identify any students in the Excel sheet. Please make sure there is a 'Name' or 'Full Name' column.");
+    const fileName = file.name.toLowerCase();
+    if (fileName.endsWith('.pdf')) {
+      const reader = new FileReader();
+      reader.onload = async (evt) => {
+        try {
+          const dataBuffer = evt.target?.result as ArrayBuffer;
+          const studentsToImport = await parsePdfTable(dataBuffer);
+          
+          if (studentsToImport.length > 0) {
+            await db.saveStudentsBulk(studentsToImport);
+            await fetchData();
+            alert(`Successfully imported ${studentsToImport.length} students from PDF!`);
+          } else {
+            alert("Could not identify any students in the PDF. Please make sure there is a 'Name' or 'Full Name' column/field.");
+          }
+        } catch (err) {
+          console.error("Error parsing PDF file", err);
+          alert("Failed to parse the PDF file. Please ensure it has a readable text table.");
         }
-      } catch (err) {
-        console.error("Error parsing Excel file", err);
-        alert("Failed to parse the Excel file. Please ensure it's a valid format.");
-      }
-      
-      if (fileInputRef.current) {
-        fileInputRef.current.value = '';
-      }
-    };
-    reader.readAsArrayBuffer(file);
+        if (fileInputRef.current) {
+          fileInputRef.current.value = '';
+        }
+      };
+      reader.readAsArrayBuffer(file);
+    } else {
+      const reader = new FileReader();
+      reader.onload = async (evt) => {
+        try {
+          const dataBuffer = evt.target?.result as ArrayBuffer;
+          const wb = XLSX.read(new Uint8Array(dataBuffer), { type: 'array' });
+          const wsname = wb.SheetNames[0];
+          const ws = wb.Sheets[wsname];
+          
+          // Read as 2D array of rows
+          const grid = XLSX.utils.sheet_to_json(ws, { header: 1 }) as any[][];
+          
+          // Parse the grid flexibly using our helper
+          const studentsToImport = parseExcelGrid(grid);
+          
+          if (studentsToImport.length > 0) {
+            await db.saveStudentsBulk(studentsToImport);
+            await fetchData();
+            alert(`Successfully imported ${studentsToImport.length} students!`);
+          } else {
+            alert("Could not identify any students in the Excel sheet. Please make sure there is a 'Name' or 'Full Name' column.");
+          }
+        } catch (err) {
+          console.error("Error parsing Excel file", err);
+          alert("Failed to parse the Excel file. Please ensure it's a valid format.");
+        }
+        
+        if (fileInputRef.current) {
+          fileInputRef.current.value = '';
+        }
+      };
+      reader.readAsArrayBuffer(file);
+    }
   };
 
   const handleAddNewRecord = async () => {
@@ -364,13 +515,13 @@ export default function AdminStudents() {
         <div className="flex gap-2">
           <input
             type="file"
-            accept=".xlsx, .xls, .csv"
+            accept=".xlsx, .xls, .csv, .pdf"
             className="hidden"
             ref={fileInputRef}
             onChange={handleFileUpload}
           />
           <Button variant="outline" onClick={() => fileInputRef.current?.click()}>
-            Import Excel
+            Import Excel/PDF
           </Button>
           <Button onClick={() => {
             setShowAddForm(!showAddForm);
@@ -389,7 +540,7 @@ export default function AdminStudents() {
           <CardContent>
             <form onSubmit={handleSubmit} className="grid md:grid-cols-2 gap-4">
               <Input label="Full Name" required value={formData.full_name} onChange={e => setFormData({...formData, full_name: e.target.value})} />
-              <Input label="Matric Number" required value={formData.matric_number} onChange={e => setFormData({...formData, matric_number: e.target.value})} />
+              <Input label="Matric Number" required value={formData.matric_number} onChange={e => handleMatricNumberChange(e.target.value)} />
               <Input label="Email Address" type="email" required value={formData.email} onChange={e => setFormData({...formData, email: e.target.value})} />
               <Input label="Department" required value={formData.department} onChange={e => setFormData({...formData, department: e.target.value})} />
               <Input label="Faculty" required value={formData.faculty} onChange={e => setFormData({...formData, faculty: e.target.value})} />

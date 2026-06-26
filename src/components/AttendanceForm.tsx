@@ -27,7 +27,7 @@ export function AttendanceForm({ type, title, metadata }: AttendanceFormProps) {
   const [newFullName, setNewFullName] = useState('');
   const [newMatric, setNewMatric] = useState('');
   const [newDepartment, setNewDepartment] = useState('General');
-  const [newLevel, setNewLevel] = useState('100L');
+  const [newLevel, setNewLevel] = useState('200L');
   const [statusOverride, setStatusOverride] = useState<'Auto' | 'Early' | 'Present' | 'Late' | 'Absent'>('Auto');
 
   const [settings, setSettings] = useState<any>(null);
@@ -47,12 +47,21 @@ export function AttendanceForm({ type, title, metadata }: AttendanceFormProps) {
       setStudent(found);
       setIsNew(false);
     } else {
-      if (matric.toUpperCase().includes('IMP') || /\d/.test(matric) && matric.length > 3) {
-        setNewMatric(matric.toUpperCase());
+      if (matric.toUpperCase().includes('IMP') || (/\d/.test(matric) && matric.length > 3)) {
+        const matricUpper = matric.toUpperCase();
+        setNewMatric(matricUpper);
         setNewFullName('');
+        if (matricUpper.includes('NUR')) {
+          setNewDepartment('Nursing');
+        } else if (matricUpper.includes('PHT')) {
+          setNewDepartment('Physiotherapy');
+        } else {
+          setNewDepartment('General');
+        }
       } else {
         setNewFullName(matric);
         setNewMatric('');
+        setNewDepartment('General');
       }
       setIsNew(true);
     }
@@ -234,7 +243,16 @@ export function AttendanceForm({ type, title, metadata }: AttendanceFormProps) {
                           type="text"
                           required
                           value={newMatric}
-                          onChange={(e) => setNewMatric(e.target.value)}
+                          onChange={(e) => {
+                            const val = e.target.value;
+                            setNewMatric(val);
+                            const upperVal = val.toUpperCase();
+                            if (upperVal.includes('NUR')) {
+                              setNewDepartment('Nursing');
+                            } else if (upperVal.includes('PHT')) {
+                              setNewDepartment('Physiotherapy');
+                            }
+                          }}
                           className="flex h-10 w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
                         />
                       </div>

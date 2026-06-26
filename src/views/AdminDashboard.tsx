@@ -171,7 +171,7 @@ export default function AdminDashboard() {
                       <p className="text-xs text-slate-500">{a.type}</p>
                     </div>
                     <div className="ml-auto text-xs text-slate-500 font-medium">
-                      {formatLagos(new Date(a.check_in_time), 'HH:mm')}
+                      {formatLagos(new Date(a.check_in_time), 'hh:mm:ss a')}
                     </div>
                   </div>
                 ))}

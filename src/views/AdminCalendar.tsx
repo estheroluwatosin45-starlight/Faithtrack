@@ -142,7 +142,7 @@ export default function AdminCalendar() {
                             </span>
                           </td>
                           <td className="px-6 py-3 text-right text-slate-500 font-mono">
-                            {formatLagos(new Date(record.check_in_time), 'HH:mm')}
+                            {formatLagos(new Date(record.check_in_time), 'hh:mm:ss a')}
                           </td>
                         </tr>
                       ))}

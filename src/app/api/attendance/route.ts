@@ -99,7 +99,7 @@ export async function GET() {
               student_name: student.full_name,
               matric_number: student.matric_number,
               department: student.department || 'General',
-              level: student.level || '100L',
+              level: student.level || '200L',
               attendance_date: item.date,
               status: 'Present',
               type: 'Devotion',
@@ -143,6 +143,29 @@ export async function GET() {
 export async function POST(req: Request) {
   try {
     const body = await req.json();
+
+    if (Array.isArray(body)) {
+      const formatted = body.map(r => ({
+        student_id: r.student_id,
+        student_name: r.student_name,
+        matric_number: r.matric_number,
+        department: r.department || 'General',
+        level: r.level || '200L',
+        attendance_date: r.attendance_date,
+        status: r.status,
+        type: r.type,
+        check_in_time: r.check_in_time || new Date().toISOString(),
+      }));
+
+      const { data, error } = await supabase
+        .from('attendance_records')
+        .insert(formatted)
+        .select();
+
+      if (error) throw error;
+      return NextResponse.json(data);
+    }
+
     const { student_id, student_name, matric_number, department, level, attendance_date, status, type, check_in_time } = body;
 
     const newRecord = {
@@ -150,7 +173,7 @@ export async function POST(req: Request) {
       student_name,
       matric_number,
       department: department || 'General',
-      level: level || '100L',
+      level: level || '200L',
       attendance_date,
       status,
       type,

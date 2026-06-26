@@ -1,0 +1,9 @@
+{
+  "name": "Faithtrack",
+  "short_name": "Faithtrack",
+  "description": "Vessel of His Mercy Attendance Check-in System",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#2563eb"
+}

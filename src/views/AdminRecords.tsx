@@ -19,7 +19,7 @@ export default function AdminRecords({ type = 'All' }: { type?: 'All' | 'Chapel'
   const [expandedDates, setExpandedDates] = useState<Record<string, boolean>>({});
   const [formData, setFormData] = useState({
     matric_number: '',
-    level: '100L',
+    level: '200L',
     type: type === 'All' ? 'Chapel' : type,
     status: 'Present' as 'Present' | 'Late' | 'Absent' | 'Early'
   });
@@ -54,12 +54,24 @@ export default function AdminRecords({ type = 'All' }: { type?: 'All' | 'Chapel'
     
     if (!student) {
       if (window.confirm("Student not found. Would you like to add them dynamically?")) {
+        const matricUpper = formData.matric_number.toUpperCase();
+        let dept = 'General';
+        let fac = 'Nursing';
+        if (matricUpper.includes('NUR')) {
+          dept = 'Nursing';
+          fac = 'Nursing';
+        } else if (matricUpper.includes('PHT')) {
+          dept = 'Physiotherapy';
+          fac = 'Nursing';
+        }
+
         student = await db.saveStudent({
           id: crypto.randomUUID(),
           created_at: new Date().toISOString(),
           full_name: formData.matric_number,
-          department: 'General',
-          level: formData.level,
+          department: dept,
+          faculty: fac,
+          level: formData.level || '200L',
           matric_number: formData.matric_number
         } as Student);
       } else {
@@ -97,7 +109,7 @@ export default function AdminRecords({ type = 'All' }: { type?: 'All' | 'Chapel'
     // Automatically expand today's date folder
     setExpandedDates(prev => ({ ...prev, [todayStr]: true }));
     
-    setFormData({ ...formData, matric_number: '', level: '100L' });
+    setFormData({ ...formData, matric_number: '', level: '200L' });
     alert(`Successfully marked ${student.full_name} present for ${formData.type}.`);
   };
 
@@ -458,12 +470,12 @@ export default function AdminRecords({ type = 'All' }: { type?: 'All' | 'Chapel'
                                     {record.status}
                                   </span>
                                 </td>
-                                <td className="px-6 py-4 font-mono text-xs text-slate-500">
-                                  <span className="flex items-center gap-1">
-                                    <Clock className="w-3 h-3 text-slate-400" />
-                                    {formatLagos(new Date(record.check_in_time), 'HH:mm:ss')}
-                                  </span>
-                                </td>
+                                 <td className="px-6 py-4 font-mono text-xs text-slate-500">
+                                   <span className="flex items-center gap-1">
+                                     <Clock className="w-3 h-3 text-slate-400" />
+                                     {formatLagos(new Date(record.check_in_time), 'hh:mm:ss a')}
+                                   </span>
+                                 </td>
                                 <td className="px-6 py-4 text-right space-x-2 flex justify-end">
                                   {confirmingDeleteId === record.id ? (
                                     <div className="flex items-center gap-2">
