@@ -21,14 +21,27 @@ export default function Home() {
 
   const filtered = searchTerm
     ? records.filter(r => {
-        const term = searchTerm.toLowerCase();
+        const terms = searchTerm.toLowerCase().trim().split(/\s+/);
         const dateStrFormatted = formatLagos(new Date(r.check_in_time), 'MMMM d yyyy').toLowerCase();
         const dateStrISO = r.attendance_date.toLowerCase();
-        return r.student_name.toLowerCase().includes(term) || 
-               (r.matric_number || '').toLowerCase().includes(term) ||
-               r.department.toLowerCase().includes(term) ||
-               dateStrFormatted.includes(term) ||
-               dateStrISO.includes(term);
+        const typeStr = r.type.toLowerCase();
+        const statusStr = r.status.toLowerCase();
+        const nameStr = r.student_name.toLowerCase();
+        const matricStr = (r.matric_number || '').toLowerCase();
+        const deptStr = r.department.toLowerCase();
+
+        return terms.every(term => {
+          // Normalize ordinals (e.g. "12th" -> "12")
+          const cleanTerm = term.replace(/(\d+)(st|nd|rd|th)/, '$1');
+          
+          return nameStr.includes(cleanTerm) || 
+                 matricStr.includes(cleanTerm) ||
+                 deptStr.includes(cleanTerm) ||
+                 typeStr.includes(cleanTerm) ||
+                 statusStr.includes(cleanTerm) ||
+                 dateStrFormatted.includes(cleanTerm) ||
+                 dateStrISO.includes(cleanTerm);
+        });
       })
     : records.slice(0, 50); // Show top 50 recent records when not searching
 
@@ -76,6 +89,17 @@ export default function Home() {
               {searchTerm ? 'Search Results' : 'Showing the 50 most recent check-ins. Search your name to find all your records.'}
             </p>
           </div>
+
+          {records[0] && (
+            <div className="mb-8 flex justify-center">
+              <div className="inline-flex items-center gap-2.5 px-4 py-2.5 rounded-xl bg-blue-50/80 border border-blue-100 text-sm text-blue-800 shadow-sm backdrop-blur-md">
+                <span className="font-semibold text-blue-900">Last Attendance Marked:</span>
+                <span>
+                  {formatLagos(new Date(records[0].check_in_time), 'MMMM d, yyyy')} &bull; {records[0].type} ({formatLagos(new Date(records[0].check_in_time), 'hh:mm:ss a')})
+                </span>
+              </div>
+            </div>
+          )}
           
           <div className="mb-6 max-w-md mx-auto">
             <div className="relative">
