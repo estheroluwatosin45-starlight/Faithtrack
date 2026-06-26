@@ -220,6 +220,32 @@ export function Navbar() {
               </div>
             </div>
 
+            {/* Mobile Status Dot & Sync */}
+            <div className="flex lg:hidden items-center mr-2">
+              {pendingCount > 0 && (
+                <button
+                  onClick={handleSync}
+                  disabled={isSyncing}
+                  className="flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-xs font-semibold bg-amber-500 text-white shadow-sm transition-colors cursor-pointer animate-pulse mr-2"
+                  title={`Sync ${pendingCount} pending records`}
+                >
+                  <RefreshCw className={`h-3 w-3 ${isSyncing ? 'animate-spin' : ''}`} />
+                  <span className="text-[10px]">{pendingCount}</span>
+                </button>
+              )}
+              <button
+                onClick={handleToggleOffline}
+                className={`flex items-center p-2 rounded-lg border transition-colors cursor-pointer ${
+                  isOffline
+                    ? 'border-red-200 bg-red-50 text-red-700'
+                    : 'border-green-200 bg-green-50 text-green-700'
+                }`}
+                title={isOffline ? 'Offline Mode. Tap to go Online.' : 'Online Mode. Tap to go Offline.'}
+              >
+                <span className={`h-2.5 w-2.5 rounded-full ${isOffline ? 'bg-red-500 animate-ping' : 'bg-green-500'}`} />
+              </button>
+            </div>
+
             {/* Mobile Hamburger Toggle */}
             <div className="flex lg:hidden items-center">
               <button

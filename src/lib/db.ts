@@ -1,4 +1,6 @@
 import { Student, AttendanceRecord, Settings } from '../types';
+import { initialStudents } from './data';
+import { historicAttendance } from './historicData';
 
 export const db = {
   generateUUID: (): string => {
@@ -88,7 +90,11 @@ export const db = {
 
   getStudents: async (): Promise<Student[]> => {
     if (db.isOfflineMode()) {
-      const cached = db.getCachedStudents();
+      let cached = db.getCachedStudents();
+      if (cached.length === 0) {
+        cached = initialStudents;
+        db.setCachedStudents(cached);
+      }
       const offline = db.getOfflineStudents();
       return [...cached, ...offline];
     }
@@ -96,12 +102,19 @@ export const db = {
       const res = await fetch('/api/students');
       if (!res.ok) throw new Error('Failed to fetch students');
       const data = await res.json();
-      db.setCachedStudents(data);
+      
+      const finalData = (data && data.length > 0) ? data : initialStudents;
+      db.setCachedStudents(finalData);
+      
       const offline = db.getOfflineStudents();
-      return [...data, ...offline];
+      return [...finalData, ...offline];
     } catch (err) {
       console.warn('Failed to fetch students, using cache:', err);
-      const cached = db.getCachedStudents();
+      let cached = db.getCachedStudents();
+      if (cached.length === 0) {
+        cached = initialStudents;
+        db.setCachedStudents(cached);
+      }
       const offline = db.getOfflineStudents();
       return [...cached, ...offline];
     }
@@ -209,7 +222,11 @@ export const db = {
 
   getAttendance: async (): Promise<AttendanceRecord[]> => {
     if (db.isOfflineMode()) {
-      const cached = db.getCachedAttendance();
+      let cached = db.getCachedAttendance();
+      if (cached.length === 0) {
+        cached = db.getInitialAttendanceRecords();
+        db.setCachedAttendance(cached);
+      }
       const offline = db.getOfflineAttendance();
       return [...offline, ...cached];
     }
@@ -217,12 +234,19 @@ export const db = {
       const res = await fetch('/api/attendance');
       if (!res.ok) throw new Error('Failed to fetch attendance');
       const data = await res.json();
-      db.setCachedAttendance(data);
+      
+      const finalData = (data && data.length > 0) ? data : db.getInitialAttendanceRecords();
+      db.setCachedAttendance(finalData);
+      
       const offline = db.getOfflineAttendance();
-      return [...offline, ...data];
+      return [...offline, ...finalData];
     } catch (err) {
       console.warn('Failed to fetch attendance, using cache:', err);
-      const cached = db.getCachedAttendance();
+      let cached = db.getCachedAttendance();
+      if (cached.length === 0) {
+        cached = db.getInitialAttendanceRecords();
+        db.setCachedAttendance(cached);
+      }
       const offline = db.getOfflineAttendance();
       return [...offline, ...cached];
     }
@@ -503,6 +527,29 @@ export const db = {
     db.setOfflineAttendance(offlineAttendance);
     db.triggerStorageChange();
     return tempRecord;
+  },
+
+  getInitialAttendanceRecords: (): AttendanceRecord[] => {
+    return historicAttendance.map((item, idx) => {
+      const normInput = item.name.toLowerCase().replace(/[^a-z]/g, '');
+      const student = initialStudents.find(s => {
+        const normS = s.full_name.toLowerCase().replace(/[^a-z]/g, '');
+        return normS.includes(normInput) || normInput.includes(normS);
+      }) || initialStudents[idx % initialStudents.length];
+
+      return {
+        id: `historic-${idx}`,
+        student_id: student.id,
+        student_name: student.full_name,
+        matric_number: student.matric_number,
+        department: student.department || 'General',
+        level: student.level || '200L',
+        attendance_date: item.date,
+        status: 'Present' as const,
+        check_in_time: `${item.date}T06:15:00.000Z`,
+        type: 'Devotion' as const
+      };
+    });
   }
 };
 

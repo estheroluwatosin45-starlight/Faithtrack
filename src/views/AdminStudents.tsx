@@ -510,9 +510,9 @@ export default function AdminStudents() {
 
   return (
     <div className="space-y-6">
-      <div className="flex justify-between items-center bg-white p-4 rounded-lg border border-slate-200 shadow-sm">
+      <div className="flex flex-col sm:flex-row gap-3 sm:justify-between sm:items-center bg-white p-4 rounded-lg border border-slate-200 shadow-sm">
         <h2 className="text-xl font-bold tracking-tight text-slate-900">Student Directory</h2>
-        <div className="flex gap-2">
+        <div className="flex flex-wrap gap-2">
           <input
             type="file"
             accept=".xlsx, .xls, .csv, .pdf"
