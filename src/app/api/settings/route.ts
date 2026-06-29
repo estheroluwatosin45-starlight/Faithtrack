@@ -13,7 +13,7 @@ const defaultSettings = {
 export async function GET() {
   try {
     const { data, error } = await supabase
-      .from('settings')
+      .from('ft_settings')
       .select('*')
       .eq('id', 1)
       .maybeSingle();
@@ -54,7 +54,7 @@ export async function POST(req: Request) {
     };
 
     const { error } = await supabase
-      .from('settings')
+      .from('ft_settings')
       .upsert(dbSettings);
 
     if (error) throw error;

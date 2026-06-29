@@ -70,7 +70,7 @@ const matchStudent = (name: string, studentsList: any[]) => {
 export async function GET() {
   try {
     const { data: records, error } = await supabase
-      .from('attendance_records')
+      .from('ft_attendance_records')
       .select('*')
       .order('check_in_time', { ascending: false });
 
@@ -83,7 +83,7 @@ export async function GET() {
       
       // Fetch students list for mapping name -> id
       const { data: students, error: studentsErr } = await supabase
-        .from('students')
+        .from('ft_students')
         .select('*');
 
       if (studentsErr) throw studentsErr;
@@ -115,7 +115,7 @@ export async function GET() {
         for (let i = 0; i < seededRecords.length; i += batchSize) {
           const batch = seededRecords.slice(i, i + batchSize);
           const { error: batchErr } = await supabase
-            .from('attendance_records')
+            .from('ft_attendance_records')
             .insert(batch);
           if (batchErr) throw batchErr;
         }
@@ -124,7 +124,7 @@ export async function GET() {
         
         // Re-fetch records
         const { data: newRecords, error: refetchErr } = await supabase
-          .from('attendance_records')
+          .from('ft_attendance_records')
           .select('*')
           .order('check_in_time', { ascending: false });
 
@@ -147,7 +147,7 @@ export async function POST(req: Request) {
     if (Array.isArray(body)) {
       // Fetch all students to match their matric_number to actual database UUIDs
       const { data: dbStudents, error: dbStudentsErr } = await supabase
-        .from('students')
+        .from('ft_students')
         .select('id, matric_number');
       
       if (dbStudentsErr) throw dbStudentsErr;
@@ -185,7 +185,7 @@ export async function POST(req: Request) {
       });
 
       const { data, error } = await supabase
-        .from('attendance_records')
+        .from('ft_attendance_records')
         .insert(formatted)
         .select();
 
@@ -199,7 +199,7 @@ export async function POST(req: Request) {
     const isValidUUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(student_id);
     if (!isValidUUID) {
       const { data: matchedStudent } = await supabase
-        .from('students')
+        .from('ft_students')
         .select('id')
         .eq('matric_number', matric_number)
         .maybeSingle();
@@ -223,7 +223,7 @@ export async function POST(req: Request) {
     };
 
     const { data, error } = await supabase
-      .from('attendance_records')
+      .from('ft_attendance_records')
       .insert(newRecord)
       .select()
       .single();
@@ -246,7 +246,7 @@ export async function PATCH(req: Request) {
     }
 
     const { data, error } = await supabase
-      .from('attendance_records')
+      .from('ft_attendance_records')
       .update(updates)
       .eq('id', id)
       .select()
@@ -269,7 +269,7 @@ export async function DELETE(req: Request) {
     }
 
     const { error } = await supabase
-      .from('attendance_records')
+      .from('ft_attendance_records')
       .delete()
       .eq('id', id);
 

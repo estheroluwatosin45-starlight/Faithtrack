@@ -5,7 +5,7 @@ import { initialStudents } from '../../../lib/data';
 export async function GET() {
   try {
     const { data: students, error } = await supabase
-      .from('students')
+      .from('ft_students')
       .select('*')
       .order('full_name', { ascending: true });
 
@@ -26,7 +26,7 @@ export async function GET() {
       }));
 
       const { data: inserted, error: insertError } = await supabase
-        .from('students')
+        .from('ft_students')
         .insert(seeded)
         .select();
 
@@ -75,7 +75,7 @@ export async function POST(req: Request) {
       });
 
       const { data, error } = await supabase
-        .from('students')
+        .from('ft_students')
         .upsert(formatted, { onConflict: 'matric_number' })
         .select();
 
@@ -113,7 +113,7 @@ export async function POST(req: Request) {
     }
 
     const { data, error } = await supabase
-      .from('students')
+      .from('ft_students')
       .upsert(studentData)
       .select()
       .single();
@@ -123,7 +123,7 @@ export async function POST(req: Request) {
     // Propagate changes to attendance records if this is an edit operation
     if (id && !id.startsWith('student-initial-')) {
       const { error: updateRecordsError } = await supabase
-        .from('attendance_records')
+        .from('ft_attendance_records')
         .update({
           matric_number: data.matric_number,
           student_name: data.full_name,
@@ -153,7 +153,7 @@ export async function DELETE(req: Request) {
     }
 
     const { error } = await supabase
-      .from('students')
+      .from('ft_students')
       .delete()
       .eq('id', id);
 
