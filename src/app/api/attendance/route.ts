@@ -145,17 +145,44 @@ export async function POST(req: Request) {
     const body = await req.json();
 
     if (Array.isArray(body)) {
-      const formatted = body.map(r => ({
-        student_id: r.student_id,
-        student_name: r.student_name,
-        matric_number: r.matric_number,
-        department: r.department || 'General',
-        level: r.level || '200L',
-        attendance_date: r.attendance_date,
-        status: r.status,
-        type: r.type,
-        check_in_time: r.check_in_time || new Date().toISOString(),
-      }));
+      // Fetch all students to match their matric_number to actual database UUIDs
+      const { data: dbStudents, error: dbStudentsErr } = await supabase
+        .from('students')
+        .select('id, matric_number');
+      
+      if (dbStudentsErr) throw dbStudentsErr;
+
+      const studentMap = new Map<string, string>();
+      if (dbStudents) {
+        dbStudents.forEach(s => {
+          if (s.matric_number) {
+            studentMap.set(s.matric_number.toUpperCase().trim(), s.id);
+          }
+        });
+      }
+
+      const formatted = body.map(r => {
+        const key = (r.matric_number || '').toUpperCase().trim();
+        let resolvedId = studentMap.get(key) || r.student_id;
+        
+        // Ensure student_id is a valid UUID
+        const isValidUUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(resolvedId);
+        if (!isValidUUID) {
+          resolvedId = '00000000-0000-0000-0000-000000000000';
+        }
+
+        return {
+          student_id: resolvedId,
+          student_name: r.student_name,
+          matric_number: r.matric_number,
+          department: r.department || 'General',
+          level: r.level || '200L',
+          attendance_date: r.attendance_date,
+          status: r.status,
+          type: r.type,
+          check_in_time: r.check_in_time || new Date().toISOString(),
+        };
+      });
 
       const { data, error } = await supabase
         .from('attendance_records')
@@ -168,8 +195,23 @@ export async function POST(req: Request) {
 
     const { student_id, student_name, matric_number, department, level, attendance_date, status, type, check_in_time } = body;
 
+    let resolvedId = student_id;
+    const isValidUUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(student_id);
+    if (!isValidUUID) {
+      const { data: matchedStudent } = await supabase
+        .from('students')
+        .select('id')
+        .eq('matric_number', matric_number)
+        .maybeSingle();
+      if (matchedStudent) {
+        resolvedId = matchedStudent.id;
+      } else {
+        resolvedId = '00000000-0000-0000-0000-000000000000';
+      }
+    }
+
     const newRecord = {
-      student_id,
+      student_id: resolvedId,
       student_name,
       matric_number,
       department: department || 'General',

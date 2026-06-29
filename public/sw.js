@@ -31,10 +31,10 @@ self.addEventListener('activate', (event) => {
 self.addEventListener('fetch', (event) => {
   const url = new URL(event.request.url);
 
-  // Ignore API requests, Dev Server calls, and non-local requests
+  // Ignore API requests, Dev Server HMR, and non-local requests
   if (
     url.pathname.startsWith('/api') || 
-    url.pathname.startsWith('/_next') || 
+    (url.pathname.startsWith('/_next') && !url.pathname.startsWith('/_next/static')) || 
     url.pathname.includes('webpack') || 
     !event.request.url.startsWith(self.location.origin) ||
     event.request.method !== 'GET'

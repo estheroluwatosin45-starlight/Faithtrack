@@ -183,6 +183,51 @@ export default function AdminDashboard() {
           </Card>
         </div>
       </div>
+
+      <Card className="col-span-full">
+        <CardHeader className="flex flex-row items-center justify-between pb-2 border-b border-slate-100">
+          <div>
+            <CardTitle className="text-lg font-bold text-slate-800">Registered Students Directory</CardTitle>
+            <p className="text-xs text-slate-500 mt-0.5">List of student names and matric numbers registered in the system</p>
+          </div>
+          <div className="bg-blue-50 text-blue-700 px-3.5 py-1.5 rounded-full text-xs font-semibold shadow-sm">
+            Total: {students.length} Students
+          </div>
+        </CardHeader>
+        <CardContent className="pt-4">
+          <div className="max-h-[350px] overflow-y-auto border border-slate-100 rounded-xl shadow-inner bg-slate-50/30">
+            <table className="min-w-full divide-y divide-slate-100 text-left text-sm">
+              <thead className="bg-slate-50 sticky top-0 backdrop-blur-md z-10">
+                <tr>
+                  <th className="px-5 py-3 font-semibold text-slate-700 border-b border-slate-100">S/N</th>
+                  <th className="px-5 py-3 font-semibold text-slate-700 border-b border-slate-100">Student Name</th>
+                  <th className="px-5 py-3 font-semibold text-slate-700 border-b border-slate-100">Matric Number</th>
+                  <th className="px-5 py-3 font-semibold text-slate-700 border-b border-slate-100">Level</th>
+                  <th className="px-5 py-3 font-semibold text-slate-700 border-b border-slate-100">Department</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-slate-100 bg-white">
+                {students.map((student, idx) => (
+                  <tr key={student.id} className="hover:bg-slate-50/50 transition-all duration-150">
+                    <td className="px-5 py-2.5 text-slate-500 font-medium">{idx + 1}</td>
+                    <td className="px-5 py-2.5 font-bold text-slate-800">{student.full_name}</td>
+                    <td className="px-5 py-2.5 font-mono text-slate-600 font-semibold">{student.matric_number}</td>
+                    <td className="px-5 py-2.5 text-slate-600 font-medium">{student.level}</td>
+                    <td className="px-5 py-2.5 text-slate-600 font-medium">{student.department || 'General'}</td>
+                  </tr>
+                ))}
+                {students.length === 0 && (
+                  <tr>
+                    <td colSpan={5} className="px-5 py-8 text-center text-slate-400 font-medium">
+                      No students registered in the database.
+                    </td>
+                  </tr>
+                )}
+              </tbody>
+            </table>
+          </div>
+        </CardContent>
+      </Card>
     </div>
   );
 }

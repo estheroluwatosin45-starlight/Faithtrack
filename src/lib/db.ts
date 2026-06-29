@@ -89,34 +89,61 @@ export const db = {
   },
 
   getStudents: async (): Promise<Student[]> => {
-    if (db.isOfflineMode()) {
+    if (typeof window === 'undefined') return [];
+    
+    const initial = initialStudents;
+    const offlineMode = db.isOfflineMode();
+    
+    if (offlineMode) {
       let cached = db.getCachedStudents();
-      if (cached.length === 0) {
-        cached = initialStudents;
+      if (cached.length < initial.length) {
+        cached = initial;
         db.setCachedStudents(cached);
       }
       const offline = db.getOfflineStudents();
-      return [...cached, ...offline];
+      return [...offline, ...cached];
     }
     try {
       const res = await fetch('/api/students');
       if (!res.ok) throw new Error('Failed to fetch students');
-      const data = await res.json();
+      const data: Student[] = await res.json();
       
-      const finalData = (data && data.length > 0) ? data : initialStudents;
-      db.setCachedStudents(finalData);
+      // Merge online students with initial students, deduplicating by matric_number
+      const seen = new Set<string>();
+      const merged: Student[] = [];
       
+      if (data && data.length > 0) {
+        data.forEach(s => {
+          if (s.matric_number) {
+            const key = s.matric_number.toUpperCase().trim();
+            seen.add(key);
+            merged.push(s);
+          }
+        });
+      }
+      
+      initial.forEach(s => {
+        if (s.matric_number) {
+          const key = s.matric_number.toUpperCase().trim();
+          if (!seen.has(key)) {
+            seen.add(key);
+            merged.push(s);
+          }
+        }
+      });
+      
+      db.setCachedStudents(merged);
       const offline = db.getOfflineStudents();
-      return [...finalData, ...offline];
+      return [...offline, ...merged];
     } catch (err) {
       console.warn('Failed to fetch students, using cache:', err);
       let cached = db.getCachedStudents();
-      if (cached.length === 0) {
-        cached = initialStudents;
+      if (cached.length < initial.length) {
+        cached = initial;
         db.setCachedStudents(cached);
       }
       const offline = db.getOfflineStudents();
-      return [...cached, ...offline];
+      return [...offline, ...cached];
     }
   },
   
@@ -221,10 +248,15 @@ export const db = {
   },
 
   getAttendance: async (): Promise<AttendanceRecord[]> => {
-    if (db.isOfflineMode()) {
+    if (typeof window === 'undefined') return [];
+    
+    const initial = db.getInitialAttendanceRecords();
+    const offlineMode = db.isOfflineMode();
+    
+    if (offlineMode) {
       let cached = db.getCachedAttendance();
-      if (cached.length === 0) {
-        cached = db.getInitialAttendanceRecords();
+      if (cached.length < initial.length) {
+        cached = initial;
         db.setCachedAttendance(cached);
       }
       const offline = db.getOfflineAttendance();
@@ -233,18 +265,37 @@ export const db = {
     try {
       const res = await fetch('/api/attendance');
       if (!res.ok) throw new Error('Failed to fetch attendance');
-      const data = await res.json();
+      const data: AttendanceRecord[] = await res.json();
       
-      const finalData = (data && data.length > 0) ? data : db.getInitialAttendanceRecords();
-      db.setCachedAttendance(finalData);
+      // Merge online data with initial historic data to ensure no data is lost
+      // Deduplicate by combining: student_id + attendance_date + type
+      const seen = new Set<string>();
+      const merged: AttendanceRecord[] = [];
       
+      if (data && data.length > 0) {
+        data.forEach(r => {
+          const key = `${r.student_id}_${r.attendance_date}_${r.type}`;
+          seen.add(key);
+          merged.push(r);
+        });
+      }
+      
+      initial.forEach(r => {
+        const key = `${r.student_id}_${r.attendance_date}_${r.type}`;
+        if (!seen.has(key)) {
+          seen.add(key);
+          merged.push(r);
+        }
+      });
+      
+      db.setCachedAttendance(merged);
       const offline = db.getOfflineAttendance();
-      return [...offline, ...finalData];
+      return [...offline, ...merged];
     } catch (err) {
       console.warn('Failed to fetch attendance, using cache:', err);
       let cached = db.getCachedAttendance();
-      if (cached.length === 0) {
-        cached = db.getInitialAttendanceRecords();
+      if (cached.length < initial.length) {
+        cached = initial;
         db.setCachedAttendance(cached);
       }
       const offline = db.getOfflineAttendance();

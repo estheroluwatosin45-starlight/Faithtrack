@@ -134,20 +134,82 @@ const rawNames = `
 132.ADEMILUA DAMILOLA
 `;
 
-export const initialStudents: Student[] = rawNames
-  .split('\n')
-  .map(line => line.trim())
-  .filter(line => line.length > 0)
-  .map((line, index) => {
-    const name = line.replace(/^\d+\./, '').trim();
-    return {
-      id: `student-initial-${index + 1}`,
-      matric_number: `MAT100${(index + 1).toString().padStart(3, '0')}`,
-      full_name: name,
-      department: 'General',
-      faculty: 'Science',
-      level: '100',
-      email: `student${index + 1}@example.com`,
-      created_at: new Date().toISOString()
-    };
-  });
+export const initialStudents: Student[] = [
+  ...rawNames
+    .split('\n')
+    .map(line => line.trim())
+    .filter(line => line.length > 0)
+    .map((line, index) => {
+      const name = line.replace(/^\d+\./, '').trim();
+      return {
+        id: `student-initial-${index + 1}`,
+        matric_number: `MAT100${(index + 1).toString().padStart(3, '0')}`,
+        full_name: name,
+        department: 'General',
+        faculty: 'Science',
+        level: '100L',
+        email: `student${index + 1}@example.com`,
+        created_at: new Date().toISOString()
+      };
+    }),
+  {
+    id: "student-initial-133",
+    matric_number: "IMP-300-OGUNJOBI",
+    full_name: "OGUNJOBI IYIOLA MICHAEL",
+    department: "General",
+    faculty: "Nursing",
+    level: "300L",
+    email: "imp-300-ogunjobi@faithtrack.edu",
+    created_at: new Date().toISOString()
+  },
+  {
+    id: "student-initial-134",
+    matric_number: "IMP-300-EMINOWA",
+    full_name: "EMINOWA TIMILEHIN",
+    department: "General",
+    faculty: "Nursing",
+    level: "300L",
+    email: "imp-300-eminowa@faithtrack.edu",
+    created_at: new Date().toISOString()
+  },
+  {
+    id: "student-initial-135",
+    matric_number: "IMP-300-SHOLA",
+    full_name: "DADA SHOLA",
+    department: "General",
+    faculty: "Nursing",
+    level: "300L",
+    email: "imp-300-shola@faithtrack.edu",
+    created_at: new Date().toISOString()
+  },
+  {
+    id: "student-initial-136",
+    matric_number: "IMP-300-OWOLABI",
+    full_name: "OWOLABI KEHINDE",
+    department: "General",
+    faculty: "Nursing",
+    level: "300L",
+    email: "imp-300-owolabi@faithtrack.edu",
+    created_at: new Date().toISOString()
+  },
+  {
+    id: "student-initial-137",
+    matric_number: "IMP-300-EFOGHERE",
+    full_name: "EFOGHERE STEPHEN",
+    department: "General",
+    faculty: "Nursing",
+    level: "300L",
+    email: "imp-300-efoghere@faithtrack.edu",
+    created_at: new Date().toISOString()
+  },
+  {
+    id: "student-initial-138",
+    matric_number: "IMP-200-DAMOLA",
+    full_name: "DAMOLA",
+    department: "General",
+    faculty: "Nursing",
+    level: "200L",
+    email: "imp-200-damola@faithtrack.edu",
+    created_at: new Date().toISOString()
+  }
+];

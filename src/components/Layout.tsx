@@ -23,17 +23,20 @@ export function Navbar() {
   const autoSync = useCallback(async () => {
     if (isSyncing) return;
     const isModeOffline = db.isOfflineMode();
+    const isBrowserOnline = typeof navigator !== 'undefined' ? navigator.onLine : true;
     const studentsPending = db.getOfflineStudents().length;
     const attendancePending = db.getOfflineAttendance().length;
     const pending = studentsPending + attendancePending;
 
-    if (!isModeOffline && pending > 0) {
+    if (!isModeOffline && isBrowserOnline && pending > 0) {
       setIsSyncing(true);
       try {
         console.log(`Auto-syncing ${pending} offline records...`);
         const res = await db.syncOfflineData();
         if (res.success) {
           console.log('Auto-sync completed successfully!');
+          setIsSyncing(false);
+          updateState();
           window.location.reload();
         }
       } catch (err) {
@@ -42,7 +45,7 @@ export function Navbar() {
         setIsSyncing(false);
       }
     }
-  }, [isSyncing]);
+  }, [isSyncing, updateState]);
 
   useEffect(() => {
     updateState();
@@ -79,12 +82,13 @@ export function Navbar() {
     try {
       const res = await db.syncOfflineData();
       if (res.success) {
+        setIsSyncing(false);
+        updateState();
         alert(`Successfully synced data!\nStudents Synced: ${res.studentsSynced}\nAttendance Logs Synced: ${res.attendanceSynced}`);
         window.location.reload();
       }
     } catch (err: any) {
       alert(`Sync failed: ${err.message || err}`);
-    } finally {
       setIsSyncing(false);
       updateState();
     }
