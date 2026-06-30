@@ -211,5 +211,165 @@ export const initialStudents: Student[] = [
     level: "200L",
     email: "imp-200-damola@faithtrack.edu",
     created_at: new Date().toISOString()
+  },
+  {
+    id: "student-initial-139",
+    matric_number: "202440026058DF",
+    full_name: "AKINMOLAFE SHINA JUSTUS",
+    department: "General",
+    faculty: "Science",
+    level: "200L",
+    email: "shina@example.com",
+    created_at: new Date().toISOString()
+  },
+  {
+    id: "student-initial-140",
+    matric_number: "VUI/24/NUR/1088",
+    full_name: "IBIJOLA ADEBOBOLA DAVID",
+    department: "Nursing",
+    faculty: "Nursing",
+    level: "200L",
+    email: "ibijola@example.com",
+    created_at: new Date().toISOString()
+  },
+  {
+    id: "student-initial-141",
+    matric_number: "VUI/24/PHT/1003",
+    full_name: "ADEOLA AYOMIDE ISREAL",
+    department: "Physiotherapy",
+    faculty: "Nursing",
+    level: "200L",
+    email: "adeola.ayomide@example.com",
+    created_at: new Date().toISOString()
+  },
+  {
+    id: "student-initial-142",
+    matric_number: "VUI/24/PHT/1024",
+    full_name: "JOSEPH OZOVEHE SAMUEL",
+    department: "Physiotherapy",
+    faculty: "Nursing",
+    level: "200L",
+    email: "joseph.samuel@example.com",
+    created_at: new Date().toISOString()
+  },
+  {
+    id: "student-initial-143",
+    matric_number: "VUI/24/PHT/1004",
+    full_name: "ADEOLA BIDEMI JOSHUA",
+    department: "Physiotherapy",
+    faculty: "Nursing",
+    level: "200L",
+    email: "adeola.bidemi@example.com",
+    created_at: new Date().toISOString()
+  },
+  {
+    id: "student-initial-144",
+    matric_number: "VUI/23/PBH/1001",
+    full_name: "BABATUNDE PIPELOLUWA DAVID",
+    department: "General",
+    faculty: "Science",
+    level: "300L",
+    email: "babatunde.david@example.com",
+    created_at: new Date().toISOString()
+  },
+  {
+    id: "student-initial-145",
+    matric_number: "IMP-200-FADAHUNSI",
+    full_name: "FADAHUNSI SAMSON",
+    department: "General",
+    faculty: "Science",
+    level: "200L",
+    email: "fadahunsi.samson@example.com",
+    created_at: new Date().toISOString()
+  },
+  {
+    id: "student-initial-146",
+    matric_number: "IMP-100-AFOLABI",
+    full_name: "AFOLABI TOYINSOLE",
+    department: "General",
+    faculty: "Science",
+    level: "100L",
+    email: "afolabi.toyinsole@example.com",
+    created_at: new Date().toISOString()
+  },
+  {
+    id: "student-initial-147",
+    matric_number: "IMP-100-STEPHEN",
+    full_name: "STEPHEN",
+    department: "General",
+    faculty: "Science",
+    level: "100L",
+    email: "stephen@example.com",
+    created_at: new Date().toISOString()
+  },
+  {
+    id: "student-initial-148",
+    matric_number: "VUI/24/NUR/1053",
+    full_name: "AROKODARE OYINDAMOLA PRAISE",
+    department: "Nursing",
+    faculty: "Nursing",
+    level: "200L",
+    email: "arokodare@example.com",
+    created_at: new Date().toISOString()
+  },
+  {
+    id: "student-initial-149",
+    matric_number: "VUI/24/PHT/1019",
+    full_name: "AYENI SAMUEL BOLUWATIFE",
+    department: "Physiotherapy",
+    faculty: "Nursing",
+    level: "200L",
+    email: "ayeni.samuel@example.com",
+    created_at: new Date().toISOString()
+  },
+  {
+    id: "student-initial-150",
+    matric_number: "VUI/24/NUR/1008",
+    full_name: "ADE-ADEOGUN FAVOUR ABISOLA",
+    department: "Nursing",
+    faculty: "Nursing",
+    level: "200L",
+    email: "adeadeogun@example.com",
+    created_at: new Date().toISOString()
+  },
+  {
+    id: "student-initial-151",
+    matric_number: "VUI/24/NUR/1077",
+    full_name: "ENIOLA TAIWO AYOMIDEJI",
+    department: "Nursing",
+    faculty: "Nursing",
+    level: "200L",
+    email: "eniola@example.com",
+    created_at: new Date().toISOString()
+  },
+  {
+    id: "student-initial-152",
+    matric_number: "202441435006CA",
+    full_name: "OLAYIWOLA ALIYAT TITILOPE",
+    department: "Nursing",
+    faculty: "Nursing",
+    level: "300L",
+    email: "olayiwola@example.com",
+    created_at: new Date().toISOString()
+  },
+  {
+    id: "student-initial-153",
+    matric_number: "202330728796JA",
+    full_name: "ADEJAYAN AYOBAYO TOLUWALASE",
+    department: "Nursing",
+    faculty: "Nursing",
+    level: "300L",
+    email: "adejayan@example.com",
+    created_at: new Date().toISOString()
+  },
+  {
+    id: "student-initial-154",
+    matric_number: "202330411312GA",
+    full_name: "OWOLABI EMMANUEL KEHINDE",
+    department: "Nursing",
+    faculty: "Nursing",
+    level: "300L",
+    email: "owolabi.emmanuel@example.com",
+    created_at: new Date().toISOString()
   }
 ];

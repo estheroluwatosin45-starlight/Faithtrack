@@ -3890,5 +3890,425 @@ export const historicAttendance = [
   {
     "date": "2026-06-19",
     "name": "AKERELE OLUWADAMILOLA"
+  },
+  {
+    "date": "2026-06-20",
+    "name": "AKOMOLAFE TOYINSOLA EMMANUEL"
+  },
+  {
+    "date": "2026-06-20",
+    "name": "OLUWAFEMI ISRAEL"
+  },
+  {
+    "date": "2026-06-20",
+    "name": "OLADUNJOYE NATHANIEL"
+  },
+  {
+    "date": "2026-06-20",
+    "name": "AGU DESTINY CHINECHEREM"
+  },
+  {
+    "date": "2026-06-20",
+    "name": "TIWO OLUWASEYI"
+  },
+  {
+    "date": "2026-06-20",
+    "name": "ADEBAYO STEPHEN ENIOLA"
+  },
+  {
+    "date": "2026-06-20",
+    "name": "OLAJIGA DIVINE OLUWAYOMI"
+  },
+  {
+    "date": "2026-06-20",
+    "name": "OLAWUYI SOLOMON OJOOLUWA"
+  },
+  {
+    "date": "2026-06-20",
+    "name": "EKUNDAYO LAUGHTER"
+  },
+  {
+    "date": "2026-06-20",
+    "name": "TIMOTHY PELUMI AUSTINE"
+  },
+  {
+    "date": "2026-06-20",
+    "name": "OLANREWAJU EMMANUEL"
+  },
+  {
+    "date": "2026-06-20",
+    "name": "FATILE HEPZIBAH AYOOLA"
+  },
+  {
+    "date": "2026-06-20",
+    "name": "ADEOJO PROGRESS"
+  },
+  {
+    "date": "2026-06-20",
+    "name": "ADARAN-KOLA CHARLES"
+  },
+  {
+    "date": "2026-06-21",
+    "name": "IBIJOLA ADEBOBOLA DAVID"
+  },
+  {
+    "date": "2026-06-21",
+    "name": "ADEOLA AYOMIDE ISREAL"
+  },
+  {
+    "date": "2026-06-21",
+    "name": "AKINMOLAFE SHINA JUSTUS"
+  },
+  {
+    "date": "2026-06-21",
+    "name": "OLAWUYI SOLOMON OJOOLUWA"
+  },
+  {
+    "date": "2026-06-21",
+    "name": "TIMOTHY PELUMI AUSTINE"
+  },
+  {
+    "date": "2026-06-21",
+    "name": "ADEOLA BIDEMI JOSHUA"
+  },
+  {
+    "date": "2026-06-21",
+    "name": "AGU DESTINY CHINECHEREM"
+  },
+  {
+    "date": "2026-06-21",
+    "name": "JOSEPH OZOVEHE SAMUEL"
+  },
+  {
+    "date": "2026-06-21",
+    "name": "OGUNJOBI IYIOLA MICHAEL"
+  },
+  {
+    "date": "2026-06-21",
+    "name": "DADA GOODNEWS"
+  },
+  {
+    "date": "2026-06-21",
+    "name": "FADAHUNSI SAMSON"
+  },
+  {
+    "date": "2026-06-21",
+    "name": "EMINOWA TIMILEHIN"
+  },
+  {
+    "date": "2026-06-21",
+    "name": "EFOGHERE STEPHEN"
+  },
+  {
+    "date": "2026-06-21",
+    "name": "AFOLABI TOYINSOLE"
+  },
+  {
+    "date": "2026-06-21",
+    "name": "STEPHEN"
+  },
+  {
+    "date": "2026-06-21",
+    "name": "ADEYIWOLA FAVOUR OLUWADUNSIN"
+  },
+  {
+    "date": "2026-06-21",
+    "name": "AKERELE OLUWADAMILOLA"
+  },
+  {
+    "date": "2026-06-21",
+    "name": "BABATUNDE PIPELOLUWA DAVID"
+  },
+  {
+    "date": "2026-06-21",
+    "name": "TIWO OLUWASEYI"
+  },
+  {
+    "date": "2026-06-21",
+    "name": "ARIYO LIVING FAITH OLULANA"
+  },
+  {
+    "date": "2026-06-22",
+    "name": "AKINMOLAFE SHINA JUSTUS"
+  },
+  {
+    "date": "2026-06-22",
+    "name": "IBIJOLA ADEBOBOLA DAVID"
+  },
+  {
+    "date": "2026-06-22",
+    "name": "ADARAN-KOLA CHARLES"
+  },
+  {
+    "date": "2026-06-22",
+    "name": "ADEYIWOLA FAVOUR OLUWADUNSIN"
+  },
+  {
+    "date": "2026-06-22",
+    "name": "OLAWUYI SOLOMON OJOOLUWA"
+  },
+  {
+    "date": "2026-06-22",
+    "name": "OGUNJOBI IYIOLA MICHAEL"
+  },
+  {
+    "date": "2026-06-22",
+    "name": "YUSUF BABATUNDE OLUWABUSAYO"
+  },
+  {
+    "date": "2026-06-22",
+    "name": "OLUWAFEMI ISRAEL"
+  },
+  {
+    "date": "2026-06-22",
+    "name": "AGU DESTINY CHINECHEREM"
+  },
+  {
+    "date": "2026-06-22",
+    "name": "ADU MOYINOLUWA"
+  },
+  {
+    "date": "2026-06-22",
+    "name": "AFOLABI TOYINSOLE"
+  },
+  {
+    "date": "2026-06-22",
+    "name": "STEPHEN"
+  },
+  {
+    "date": "2026-06-22",
+    "name": "OLAJIGA DIVINE OLUWAYOMI"
+  },
+  {
+    "date": "2026-06-22",
+    "name": "TIMOTHY PELUMI AUSTINE"
+  },
+  {
+    "date": "2026-06-22",
+    "name": "TIWO OLUWASEYI"
+  },
+  {
+    "date": "2026-06-22",
+    "name": "ALADESURU ADEGBENRO EZEKIEL"
+  },
+  {
+    "date": "2026-06-22",
+    "name": "OMOPARIOLA PHILIP"
+  },
+  {
+    "date": "2026-06-22",
+    "name": "ADEOLA AYOMIDE ISREAL"
+  },
+  {
+    "date": "2026-06-22",
+    "name": "JOSEPH OZOVEHE SAMUEL"
+  },
+  {
+    "date": "2026-06-22",
+    "name": "EMINOWA TIMILEHIN"
+  },
+  {
+    "date": "2026-06-22",
+    "name": "DADA SHOLA"
+  },
+  {
+    "date": "2026-06-22",
+    "name": "OWOLABI KEHINDE"
+  },
+  {
+    "date": "2026-06-22",
+    "name": "EFOGHERE STEPHEN"
+  },
+  {
+    "date": "2026-06-22",
+    "name": "DADA GOODNEWS"
+  },
+  {
+    "date": "2026-06-22",
+    "name": "OLADUNJOYE NATHANIEL"
+  },
+  {
+    "date": "2026-06-22",
+    "name": "AKERELE OLUWADAMILOLA"
+  },
+  {
+    "date": "2026-06-22",
+    "name": "OLANREWAJU EMMANUEL"
+  },
+  {
+    "date": "2026-06-22",
+    "name": "EKUNDAYO LAUGHTER"
+  },
+  {
+    "date": "2026-06-22",
+    "name": "ADEOJO PROGRESS"
+  },
+  {
+    "date": "2026-06-22",
+    "name": "ARIYO LIVING FAITH OLULANA"
+  },
+  {
+    "date": "2026-06-22",
+    "name": "DAMOLA"
+  },
+  {
+    "date": "2026-06-22",
+    "name": "ADARALEGBE EMMANUEL OLAMILEKAN"
+  },
+  {
+    "date": "2026-06-22",
+    "name": "BAMIGBOYE SAMUEL AYOBAMI"
+  },
+  {
+    "date": "2026-06-22",
+    "name": "BABATUNDE PIPELOLUWA DAVID"
+  },
+  {
+    "date": "2026-06-23",
+    "name": "AKINMOLAFE SHINA JUSTUS"
+  },
+  {
+    "date": "2026-06-23",
+    "name": "IBIJOLA ADEBOBOLA DAVID"
+  },
+  {
+    "date": "2026-06-23",
+    "name": "OGUNJOBI IYIOLA MICHAEL"
+  },
+  {
+    "date": "2026-06-23",
+    "name": "ADEYIWOLA FAVOUR OLUWADUNSIN"
+  },
+  {
+    "date": "2026-06-23",
+    "name": "YUSUF BABATUNDE OLUWABUSAYO"
+  },
+  {
+    "date": "2026-06-23",
+    "name": "TIMOTHY PELUMI AUSTINE"
+  },
+  {
+    "date": "2026-06-23",
+    "name": "OLAWUYI SOLOMON OJOOLUWA"
+  },
+  {
+    "date": "2026-06-23",
+    "name": "AFOLABI TOYINSOLE"
+  },
+  {
+    "date": "2026-06-23",
+    "name": "ADEOJO PROGRESS"
+  },
+  {
+    "date": "2026-06-23",
+    "name": "JOSEPH OZOVEHE SAMUEL"
+  },
+  {
+    "date": "2026-06-23",
+    "name": "AGU DESTINY CHINECHEREM"
+  },
+  {
+    "date": "2026-06-23",
+    "name": "STEPHEN"
+  },
+  {
+    "date": "2026-06-23",
+    "name": "AKERELE OLUWADAMILOLA"
+  },
+  {
+    "date": "2026-06-23",
+    "name": "ADEOLA AYOMIDE ISREAL"
+  },
+  {
+    "date": "2026-06-23",
+    "name": "EMINOWA TIMILEHIN"
+  },
+  {
+    "date": "2026-06-23",
+    "name": "EFOGHERE STEPHEN"
+  },
+  {
+    "date": "2026-06-23",
+    "name": "TIWO OLUWASEYI"
+  },
+  {
+    "date": "2026-06-23",
+    "name": "ALADESURU ADEGBENRO EZEKIEL"
+  },
+  {
+    "date": "2026-06-23",
+    "name": "OLANREWAJU EMMANUEL"
+  },
+  {
+    "date": "2026-06-23",
+    "name": "OLADUNJOYE NATHANIEL"
+  },
+  {
+    "date": "2026-06-23",
+    "name": "EKUNDAYO LAUGHTER"
+  },
+  {
+    "date": "2026-06-23",
+    "name": "DADA SHOLA"
+  },
+  {
+    "date": "2026-06-23",
+    "name": "ADARAN-KOLA CHARLES"
+  },
+  {
+    "date": "2026-06-24",
+    "name": "EKUNDAYO LAUGHTER"
+  },
+  {
+    "date": "2026-06-24",
+    "name": "AGU DESTINY CHINECHEREM"
+  },
+  {
+    "date": "2026-06-24",
+    "name": "OLUWAFEMI ISRAEL"
+  },
+  {
+    "date": "2026-06-24",
+    "name": "OLAWUYI SOLOMON OJOOLUWA"
+  },
+  {
+    "date": "2026-06-24",
+    "name": "ADEYIWOLA FAVOUR OLUWADUNSIN"
+  },
+  {
+    "date": "2026-06-24",
+    "name": "AKOMOLAFE TOYINSOLA EMMANUEL"
+  },
+  {
+    "date": "2026-06-24",
+    "name": "ABOLARINWA YEMI"
+  },
+  {
+    "date": "2026-06-24",
+    "name": "ADEBAYO STEPHEN ENIOLA"
+  },
+  {
+    "date": "2026-06-24",
+    "name": "TIMOTHY PELUMI AUSTINE"
+  },
+  {
+    "date": "2026-06-24",
+    "name": "ADARALEGBE EMMANUEL OLAMILEKAN"
+  },
+  {
+    "date": "2026-06-24",
+    "name": "ALADESURU ADEGBENRO EZEKIEL"
+  },
+  {
+    "date": "2026-06-24",
+    "name": "YUSUF BABATUNDE OLUWABUSAYO"
+  },
+  {
+    "date": "2026-06-24",
+    "name": "OLADUNJOYE NATHANIEL"
+  },
+  {
+    "date": "2026-06-24",
+    "name": "ADEOJO PROGRESS"
   }
 ];
