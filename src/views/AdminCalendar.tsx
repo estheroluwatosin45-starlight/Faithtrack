@@ -13,7 +13,21 @@ export default function AdminCalendar() {
 
   useEffect(() => {
     db.getAttendance()
-      .then(setAttendance)
+      .then(records => {
+        setAttendance(records);
+        if (records.length > 0) {
+          // Find the latest attendance record by check-in time
+          const sorted = [...records].sort((a, b) => new Date(b.check_in_time).getTime() - new Date(a.check_in_time).getTime());
+          const latest = sorted[0];
+          const parts = latest.attendance_date.split('-');
+          if (parts.length === 3) {
+            const year = parseInt(parts[0], 10);
+            const month = parseInt(parts[1], 10) - 1;
+            const day = parseInt(parts[2], 10);
+            setSelectedDate(new Date(year, month, day));
+          }
+        }
+      })
       .catch(err => console.error(err));
   }, []);
 
