@@ -48,6 +48,8 @@ export function Navbar() {
   }, [isSyncing, updateState]);
 
   useEffect(() => {
+    // Force set manual offline mode to false on load so user is always online by default
+    db.setOfflineMode(false);
     updateState();
     autoSync();
 
@@ -184,10 +186,10 @@ export function Navbar() {
                 </div>
               </div>
 
-              {/* Online/Offline status and Sync actions */}
-              <div className="flex items-center space-x-3 border-l border-gray-200 pl-4">
-                {/* Sync Button */}
-                {pendingCount > 0 && (
+              {/* Sync actions */}
+              {pendingCount > 0 && (
+                <div className="flex items-center space-x-3 border-l border-gray-200 pl-4">
+                  {/* Sync Button */}
                   <button
                     onClick={handleSync}
                     disabled={isSyncing}
@@ -196,35 +198,11 @@ export function Navbar() {
                     <RefreshCw className={`h-3.5 w-3.5 ${isSyncing ? 'animate-spin' : ''}`} />
                     Sync ({pendingCount})
                   </button>
-                )}
-
-                {/* Status Toggle */}
-                <button
-                  onClick={handleToggleOffline}
-                  className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium border transition-all duration-200 cursor-pointer ${
-                    isOffline
-                      ? 'border-red-200 bg-red-50 text-red-700 hover:bg-red-100'
-                      : 'border-green-200 bg-green-50 text-green-700 hover:bg-green-100'
-                  }`}
-                  title={isOffline ? 'You are working offline. Click to go online.' : 'You are working online. Click to go offline.'}
-                >
-                  <span className={`h-2 w-2 rounded-full ${isOffline ? 'bg-red-500 animate-ping' : 'bg-green-500 animate-pulse'}`} />
-                  {isOffline ? (
-                    <>
-                      <WifiOff className="h-3.5 w-3.5" />
-                      Offline
-                    </>
-                  ) : (
-                    <>
-                      <Wifi className="h-3.5 w-3.5" />
-                      Online
-                    </>
-                  )}
-                </button>
-              </div>
+                </div>
+              )}
             </div>
 
-            {/* Mobile Status Dot & Sync */}
+            {/* Mobile Sync */}
             <div className="flex lg:hidden items-center mr-2">
               {pendingCount > 0 && (
                 <button
@@ -237,17 +215,6 @@ export function Navbar() {
                   <span className="text-[10px]">{pendingCount}</span>
                 </button>
               )}
-              <button
-                onClick={handleToggleOffline}
-                className={`flex items-center p-2 rounded-lg border transition-colors cursor-pointer ${
-                  isOffline
-                    ? 'border-red-200 bg-red-50 text-red-700'
-                    : 'border-green-200 bg-green-50 text-green-700'
-                }`}
-                title={isOffline ? 'Offline Mode. Tap to go Online.' : 'Online Mode. Tap to go Offline.'}
-              >
-                <span className={`h-2.5 w-2.5 rounded-full ${isOffline ? 'bg-red-500 animate-ping' : 'bg-green-500'}`} />
-              </button>
             </div>
 
             {/* Mobile Hamburger Toggle */}
@@ -267,38 +234,19 @@ export function Navbar() {
         {isOpen && (
           <div className="lg:hidden border-t border-gray-100 bg-white/95 backdrop-blur-md px-4 py-6 space-y-6">
             {/* Connection Status & Sync for Mobile */}
-            <div className="flex items-center justify-between bg-gray-50 p-3 rounded-xl border border-gray-100">
-              <div className="flex items-center gap-2">
-                <span className={`h-2.5 w-2.5 rounded-full ${isOffline ? 'bg-red-500 animate-ping' : 'bg-green-500 animate-pulse'}`} />
-                <span className="text-sm font-semibold text-gray-700">
-                  {isOffline ? 'Offline Mode' : 'Online Mode'}
-                </span>
-              </div>
-              
-              <div className="flex gap-2">
-                {pendingCount > 0 && (
-                  <button
-                    onClick={handleSync}
-                    disabled={isSyncing}
-                    className="flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs font-semibold bg-amber-500 hover:bg-amber-600 text-white shadow-sm transition-colors disabled:opacity-50 cursor-pointer"
-                  >
-                    <RefreshCw className={`h-3 w-3 ${isSyncing ? 'animate-spin' : ''}`} />
-                    Sync ({pendingCount})
-                  </button>
-                )}
+            {pendingCount > 0 && (
+              <div className="flex items-center justify-between bg-amber-50 p-3 rounded-xl border border-amber-100">
+                <span className="text-xs font-medium text-amber-800">You have offline records to sync</span>
                 <button
-                  onClick={handleToggleOffline}
-                  className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium border transition-colors cursor-pointer ${
-                    isOffline
-                      ? 'border-red-200 bg-white text-red-700 hover:bg-red-50'
-                      : 'border-green-200 bg-white text-green-700 hover:bg-green-50'
-                  }`}
+                  onClick={handleSync}
+                  disabled={isSyncing}
+                  className="flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs font-semibold bg-amber-500 hover:bg-amber-600 text-white shadow-sm transition-colors disabled:opacity-50 cursor-pointer"
                 >
-                  {isOffline ? <Wifi className="h-3 w-3" /> : <WifiOff className="h-3 w-3" />}
-                  {isOffline ? 'Go Online' : 'Go Offline'}
+                  <RefreshCw className={`h-3 w-3 ${isSyncing ? 'animate-spin' : ''}`} />
+                  Sync ({pendingCount})
                 </button>
               </div>
-            </div>
+            )}
 
             {/* Main Links */}
             <div className="space-y-1">
