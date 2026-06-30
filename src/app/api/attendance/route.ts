@@ -2,32 +2,43 @@ import { NextResponse } from 'next/server';
 import { supabase } from '../../../lib/supabaseServer';
 import { historicAttendance } from '../../../lib/historicData';
 
-// Helper to normalize names for mapping historic data
 const normalizeName = (name: string) => {
-  let cleaned = name.trim().replace(/\s*\d{3,}lvl\s*/i, "").replace(/^\d+\.\s*/, "").replace(/[^a-zA-Z\s]/g, " ").trim().toLowerCase();
+  let cleaned = name.trim();
+  // Remove level suffixes like 100L, 200lvl, 100ovl, etc.
+  cleaned = cleaned.replace(/\s*\d+\s*(?:lvl|lv|l|ovl|ov)?\s*$/i, "");
+  // Remove numbers at start
+  cleaned = cleaned.replace(/^\d+\.\s*/, "");
+  // Replace non-alphabetic with space
+  cleaned = cleaned.replace(/[^a-zA-Z\s]/g, " ");
+  // Collapse multiple spaces
+  cleaned = cleaned.replace(/\s+/g, " ");
+  cleaned = cleaned.trim().toLowerCase();
   
   const aliases: Record<string, string> = {
     "fatile ephzibah": "fatile hepzibah ayoola",
     "fatile hepizibah": "fatile hepzibah ayoola",
     "fatile hepzibah": "fatile hepzibah ayoola",
+    "adaran kola charles": "adaran-kola charles",
     "adaron kola charles": "adaran-kola charles",
+    "adaron-kola charles": "adaran-kola charles",
     "adarankola charles": "adaran-kola charles",
     "adaronkola charles": "adaran-kola charles",
     "adarana kola charles": "adaran-kola charles",
-    "adaran kola  charles": "adaran-kola charles",
     "adaran-kola charles": "adaran-kola charles",
     "adeyiwol favor": "adeyiwola favour",
     "adeyiwola favour": "adeyiwola favour",
     "adu moyin": "adu moyinoluwa",
     "adu moyinoluwa": "adu moyinoluwa",
     "mr nathaniel": "oladunjoye nathaniel",
+    "mr. nathaniel": "oladunjoye nathaniel",
+    "nathaniel": "oladunjoye nathaniel",
     "oladunjole nataniel": "oladunjoye nathaniel",
     "oladunjoye nathaniel": "oladunjoye nathaniel",
     "oliwafemi israel": "oluwafemi israel",
-    "akerele oluwadamilola": "akerele damilola",
-    "akerele damilola": "akerele damilola",
-    "adebayo lfunu samuel": "adebayo ifunu samuel",
-    "itunu samuel": "adebayo ifunu samuel",
+    "akerele damilola": "akerele oluwadamilola",
+    "adebayo lfunu samuel": "adebayo itunu samuel",
+    "adebayo ifunu samuel": "adebayo itunu samuel",
+    "itunu samuel": "adebayo itunu samuel",
     "timothy austin": "timothy pelumi austine",
     "timothy austine": "timothy pelumi austine",
     "timothy ustin": "timothy pelumi austine",
@@ -36,7 +47,27 @@ const normalizeName = (name: string) => {
     "adebayo steven": "adebayo stephen",
     "ekundayo success": "ekundayo success",
     "ekundayo stephen": "ekundayo success",
-    "ayodele oluwajuwon": "ayodele olajuwon"
+    "ayodele olajuwon": "ayodele oluwajuwon",
+    "abolarinwa femi": "abolarinwa yemi",
+    "olarewaju emmanuel": "olanrewaju emmanuel",
+    "olarenwaju emmanuel": "olanrewaju emmanuel",
+    "shina": "akinmolafe shina justus",
+    "akinmolafe shina": "akinmolafe shina justus",
+    "eminowa timileyin": "eminowa timilehin",
+    "goodness": "dada shola",
+    "omoparoila philip": "omopariola philip",
+    "emmanuel okwedi": "okwedi emmanuel",
+    "afolalu oluwatimileyin": "afolalu oluwatimilehin christopher",
+    "afolalu oluwatimileyin christopher": "afolalu oluwatimilehin christopher",
+    "afolalu christopher": "afolalu oluwatimilehin christopher",
+    "ayomide adeola": "adeola ayomide isreal",
+    "akolade victor": "folorunsho victor awolade",
+    "ige henry": "ige oluwatimilehin henry",
+    "damilola": "akerele oluwadamilola",
+    "adaralegbe olamilekan": "adaralegbe emmanuel olamilekan",
+    "ogunyem emmanuel": "ogunyemi emmanuel ayomide",
+    "adegboyega samuel": "adegboyega adeniyi samuel",
+    "adebayo laughter": "ekundayo laughter"
   };
 
   for (const [key, val] of Object.entries(aliases)) {
@@ -45,8 +76,6 @@ const normalizeName = (name: string) => {
     }
   }
 
-  if (cleaned.includes("damilola") && !cleaned.includes("akerele")) return "akerele damilola";
-  if (cleaned.includes("austin") && !cleaned.includes("timothy")) return "timothy pelumi austine";
   if (cleaned === "solomon") return "olawuyi solomon";
   if (cleaned === "destiny") return "agu destiny";
   if (cleaned === "babatunde") return "yusuf babatunde";
