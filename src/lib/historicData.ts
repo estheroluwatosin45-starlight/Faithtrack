@@ -4558,5 +4558,109 @@ export const historicAttendance = [
   {
     "date": "2026-06-30",
     "name": "TIWO OLUWASEYI"
+  },
+  {
+    "date": "2026-07-01",
+    "name": "TIWO OLUWASEYI"
+  },
+  {
+    "date": "2026-07-01",
+    "name": "TIMOTHY PELUMI AUSTINE"
+  },
+  {
+    "date": "2026-07-01",
+    "name": "ADEOJO PROGRESS"
+  },
+  {
+    "date": "2026-07-01",
+    "name": "OLUWAFEMI ISRAEL"
+  },
+  {
+    "date": "2026-07-01",
+    "name": "AGU DESTINY CHINECHEREM"
+  },
+  {
+    "date": "2026-07-01",
+    "name": "AKOMOLAFE TOYINSOLA EMMANUEL"
+  },
+  {
+    "date": "2026-07-01",
+    "name": "ADEBAYO STEPHEN ENIOLA"
+  },
+  {
+    "date": "2026-07-01",
+    "name": "ARIYO LIVING FAITH OLULANA"
+  },
+  {
+    "date": "2026-07-01",
+    "name": "OGUNYEMI EMMANUEL AYOMIDE"
+  },
+  {
+    "date": "2026-07-01",
+    "name": "OLANREWAJU EMMANUEL"
+  },
+  {
+    "date": "2026-07-01",
+    "name": "OLAWUYI SOLOMON OJOOLUWA"
+  },
+  {
+    "date": "2026-07-01",
+    "name": "OLAJIGA DIVINE OLUWAYOMI"
+  },
+  {
+    "date": "2026-07-01",
+    "name": "YUSUF BABATUNDE OLUWABUSAYO"
+  },
+  {
+    "date": "2026-07-01",
+    "name": "EKUNDAYO LAUGHTER"
+  },
+  {
+    "date": "2026-07-01",
+    "name": "FATILE HEPZIBAH AYOOLA"
+  },
+  {
+    "date": "2026-07-01",
+    "name": "ALADESURU ADEGBENRO EZEKIEL"
+  },
+  {
+    "date": "2026-07-01",
+    "name": "ADEYIWOLA FAVOUR OLUWADUNSIN"
+  },
+  {
+    "date": "2026-07-01",
+    "name": "ADARAN-KOLA CHARLES"
+  },
+  {
+    "date": "2026-07-03",
+    "name": "OLAWUYI SOLOMON OJOOLUWA"
+  },
+  {
+    "date": "2026-07-03",
+    "name": "AKOMOLAFE TOYINSOLA EMMANUEL"
+  },
+  {
+    "date": "2026-07-03",
+    "name": "ADEYIWOLA FAVOUR OLUWADUNSIN"
+  },
+  {
+    "date": "2026-07-03",
+    "name": "AGU DESTINY CHINECHEREM"
+  },
+  {
+    "date": "2026-07-03",
+    "name": "SALIHU ABDULSAMAD"
+  },
+  {
+    "date": "2026-07-03",
+    "name": "ADEBAYO STEPHEN ENIOLA"
+  },
+  {
+    "date": "2026-07-03",
+    "name": "EKUNDAYO LAUGHTER"
+  },
+  {
+    "date": "2026-07-03",
+    "name": "TIMOTHY PELUMI AUSTINE"
   }
 ];
