@@ -213,13 +213,24 @@ export async function POST(req: Request) {
         };
       });
 
-      const { data, error } = await supabase
-        .from('ft_attendance_records')
-        .insert(formatted)
-        .select();
-
-      if (error) throw error;
-      return NextResponse.json(data);
+      const insertedData: any[] = [];
+      for (const record of formatted) {
+        const { data: insData, error: insErr } = await supabase
+          .from('ft_attendance_records')
+          .insert(record)
+          .select();
+        
+        if (insErr) {
+          if (insErr.code === '23505') {
+            console.log(`Skipping duplicate sync record: student_id=${record.student_id}, date=${record.attendance_date}, type=${record.type}`);
+          } else {
+            throw insErr;
+          }
+        } else if (insData) {
+          insertedData.push(...insData);
+        }
+      }
+      return NextResponse.json(insertedData);
     }
 
     const { student_id, student_name, matric_number, department, level, attendance_date, status, type, check_in_time } = body;
